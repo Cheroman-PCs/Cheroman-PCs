@@ -1,29 +1,29 @@
-from ttkbootstrap import Window, Frame, Label, Button, Treeview, Scrollbar, TOP, SUCCESS, HEADINGS, BOTH, CENTER, HORIZONTAL, VERTICAL, RIGHT, Y, BOTTOM, X, END, LEFT
-from tkinter.messagebox import askyesno, showwarning
+from ttkbootstrap import Window, Frame, Label, Button, Treeview, Scrollbar, TOP, SUCCESS, HEADINGS, BOTH, CENTER, HORIZONTAL, VERTICAL, RIGHT, Y, BOTTOM, X, END
+from tkinter.messagebox import askyesno, showwarning, showinfo
 from cytoflow import Tube, ImportOp, ThresholdOp, DensityGateOp, FlowPeaksOp
 from numpy import argmax, sort
 from os import path
-from matplotlib.pyplot import subplots, close
+from matplotlib.pyplot import subplots, close, show
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from csv import writer
 
 # Variables globales
-theme_name = "cyborg"
-application_title = "Tkinter experiment"
-minimum_window_width = 800
-minimum_window_height = 600
-columns = ("file_name", "total_number_events", "number_cluster_events", "percentage_number_events_total", "mfi_cluster") # Definimos las columnas del treeview
-user_directory = path.expanduser("~") # Esto obtiene el directorio de usuario
-user_desktop_directory = path.join(user_directory, "Desktop") # Esto obtiene el directorio de escritorio de usuario
-fcs_file = r"C:\Users\david\Desktop\1.fcs"
-xchannel = "R1-A"
-ychannel = "B8-A"
-scale = "log"
-channel = "B4-A"
-cluster_name = "FlowPeaks"
+_theme_name = "cyborg"
+_application_title = "Tkinter experiment"
+_minimum_window_width = 800
+_minimum_window_height = 600
+_columns = ("file_name", "total_number_events", "number_cluster_events", "percentage_number_events_total", "mfi_cluster") # Definimos las columnas del treeview
+_user_directory = path.expanduser("~") # Esto obtiene el directorio de usuario
+_user_desktop_directory = path.join(_user_directory, "Desktop") # Esto obtiene el directorio de escritorio de usuario
+_fcs_file = r"C:\Users\david\Desktop\1.fcs"
+_xchannel = "R1-A"
+_ychannel = "B8-A"
+_scale = "log"
+_channel = "B4-A"
+_cluster_name = "FlowPeaks"
 
 # Función principal del programa
-def main():
+def _main():
     '''
     Función principal del programa
     '''
@@ -51,9 +51,9 @@ def generate_window():
     Función que genera la ventana del programa
     '''
     # Generamos la ventana con un tema específico, un título y unas dimensiones mínimas
-    window = Window(themename=theme_name)
-    window.title(application_title)
-    window.minsize(minimum_window_width, minimum_window_height)
+    window = Window(themename=_theme_name)
+    window.title(_application_title)
+    window.minsize(_minimum_window_width, _minimum_window_height)
     
     # Retornamos la ventana del programa
     return window
@@ -68,11 +68,11 @@ def window_size_placement(window):
     screen_height = window.winfo_screenheight()
 
     # Calcula la posición del centro
-    position_top = int(screen_height / 2 - minimum_window_height / 2)
-    position_right = int(screen_width / 2 - minimum_window_width / 2)
+    position_top = int(screen_height / 2 - _minimum_window_height / 2)
+    position_right = int(screen_width / 2 - _minimum_window_width / 2)
 
     # Posiciona la ventana en el centro de la pantalla
-    window.geometry(f"{minimum_window_width}x{minimum_window_height}+{position_right}+{position_top}")
+    window.geometry(f"{_minimum_window_width}x{_minimum_window_height}+{position_right}+{position_top}")
 
 # Función que genera la tabla con los datos
 def generate_treeview(window):
@@ -84,20 +84,20 @@ def generate_treeview(window):
     treeview_frame.place(relx=0.2, rely=0, relwidth=0.8, relheight=0.5)
 
     # Creamos el Treeview
-    treeview = Treeview(treeview_frame, bootstyle=SUCCESS, columns=columns, show=HEADINGS) # NOTA: Para mostrar la columna #0, poner el atributo show=TREEHEADINGS
+    treeview = Treeview(treeview_frame, bootstyle=SUCCESS, columns=_columns, show=HEADINGS) # NOTA: Para mostrar la columna #0, poner el atributo show=TREEHEADINGS
     treeview.pack(fill=BOTH, expand=True, padx=(0, 20))
-    treeview.column(columns[0], minwidth=162, width=162, anchor=CENTER)
-    treeview.column(columns[1], minwidth=100, width=100, anchor=CENTER)
-    treeview.column(columns[2], minwidth=125, width=125, anchor=CENTER)
-    treeview.column(columns[3], minwidth=150, width=150, anchor=CENTER)
-    treeview.column(columns[4], minwidth=75, width=75, anchor=CENTER)
+    treeview.column(_columns[0], minwidth=162, width=162, anchor=CENTER)
+    treeview.column(_columns[1], minwidth=100, width=100, anchor=CENTER)
+    treeview.column(_columns[2], minwidth=125, width=125, anchor=CENTER)
+    treeview.column(_columns[3], minwidth=150, width=150, anchor=CENTER)
+    treeview.column(_columns[4], minwidth=75, width=75, anchor=CENTER)
 
     # Definimos las cabeceras
-    treeview.heading(columns[0], text="File name")
-    treeview.heading(columns[1], text="Total no. of events")
-    treeview.heading(columns[2], text="No. cluster events")
-    treeview.heading(columns[3], text="% no. of events over total")
-    treeview.heading(columns[4], text="MFI cluster")
+    treeview.heading(_columns[0], text="File name")
+    treeview.heading(_columns[1], text="Total no. of events")
+    treeview.heading(_columns[2], text="No. cluster events")
+    treeview.heading(_columns[3], text="% no. of events over total")
+    treeview.heading(_columns[4], text="MFI cluster")
 
     # Añadimos los scrollbars del treeview
     add_treeview_scrollbars(treeview_frame, treeview)
@@ -123,7 +123,7 @@ def add_data_treeview(window, treeview):
     '''
     Función que añade los datos al treeview
     '''
-    treeview.insert("", END, values=new_experiment(window, fcs_file))
+    treeview.insert("", END, values=new_experiment(window, _fcs_file))
     treeview.insert("", END, values=("A"))
     treeview.insert("", END, values=("B"))
     treeview.insert("", END, values=("C"))
@@ -161,27 +161,27 @@ def new_experiment(window, fcs_file):
     '''
     tube = Tube(file=fcs_file)
 
-    import_op = ImportOp(tubes=[tube], channels={xchannel : xchannel, ychannel : ychannel, channel : channel})
+    import_op = ImportOp(tubes=[tube], channels={_xchannel : _xchannel, _ychannel : _ychannel, _channel : _channel})
     experiment = import_op.apply()
 
     # Realizamos la operación Threshold sobre el experimento
     operation_name = "Threshold"
-    threshold_op = ThresholdOp(name=operation_name, channel=xchannel, threshold=2000)
+    threshold_op = ThresholdOp(name=operation_name, channel=_xchannel, threshold=2000)
     experiment_threshold = threshold_op.apply(experiment)
     experiment_threshold = experiment_threshold.query(operation_name)
 
     # Realizamos la operación DensityGate sobre el experimento
     operation_name = "DensityGate"
-    density_gate_op = DensityGateOp(name=operation_name, xchannel=xchannel, xscale=scale, ychannel=ychannel, yscale=scale, keep=0.5)
+    density_gate_op = DensityGateOp(name=operation_name, xchannel=_xchannel, xscale=_scale, ychannel=_ychannel, yscale=_scale, keep=0.5)
     density_gate_op.estimate(experiment_threshold)
     experiment_density_gate = density_gate_op.apply(experiment_threshold)
     experiment_density_gate = experiment_density_gate.query(operation_name)
 
     # Realizamos la operación de clustering FlowPeaks sobre el experimento
-    flow_peaks_op = FlowPeaksOp(name=cluster_name, channels=[xchannel, ychannel], scale={xchannel : scale, ychannel : scale}, h0=3)
+    flow_peaks_op = FlowPeaksOp(name=_cluster_name, channels=[_xchannel, _ychannel], scale={_xchannel : _scale, _ychannel : _scale}, h0=3)
     flow_peaks_op.estimate(experiment_density_gate)
     experiment_flow_peaks = flow_peaks_op.apply(experiment_density_gate)
-    argmax(experiment_flow_peaks[[cluster_name]].groupby(by=experiment_flow_peaks[cluster_name]).count())
+    argmax(experiment_flow_peaks[[_cluster_name]].groupby(by=experiment_flow_peaks[_cluster_name]).count())
 
     # Una vez realizadas las opereaciones, pintamos la gráfica de puntos en la ventana del programa
     generate_canvas(window, experiment_flow_peaks)
@@ -202,7 +202,7 @@ def median_fluorescence_intensity_cluster_interest(experiment_flow_peaks):
     Función que calcula la Intensidad Mediana de Fluorescencia (IMF) sobre el cluster de interés
     '''
     # Ordenamos los datos del experimento en el canal deseado
-    sorted_data = sort(experiment_flow_peaks[channel])
+    sorted_data = sort(experiment_flow_peaks[_channel])
 
     # Obtenemos el número total de datos
     total_number_data = len(sorted_data)
@@ -229,10 +229,10 @@ def generate_canvas(window, experiment_flow_peaks):
     figure, axes = subplots()
 
     # Dibujamos los puntos, diferenciando los clusters por color
-    clusters = data_frame[cluster_name].unique()
+    clusters = data_frame[_cluster_name].unique()
     for cluster in clusters:
-        data_frame_cluster = data_frame[data_frame[cluster_name] == cluster]
-        axes.scatter(data_frame_cluster[xchannel], data_frame_cluster[ychannel], label=f"{cluster_name} {cluster}", s=5, color="green")
+        data_frame_cluster = data_frame[data_frame[_cluster_name] == cluster]
+        axes.scatter(data_frame_cluster[_xchannel], data_frame_cluster[_ychannel], label=f"{_cluster_name} {cluster}", s=5, color="green")
 
     # Mostramos la leyenda
     axes.legend()
@@ -245,8 +245,15 @@ def generate_canvas(window, experiment_flow_peaks):
     close(fig=figure)
 
     # Botón "View graph in window"
-    # view_graph_window_button = Button(canvas_frame, text="View graph in window")
-    # view_graph_window_button.pack(side=RIGHT, padx=10, pady=20)
+    # view_graph_window_button = Button(canvas_frame, text="View graph in window", command=lambda: show_graph_window())
+    # view_graph_window_button.pack(side=BOTTOM, padx=10, pady=20)
+
+# Función que muestra la gráfica en ventana
+# def show_graph_window():
+#     '''
+#     Función que muestra la gráfica en ventana
+#     '''
+#     show()
 
 # Función que genera los botones
 def generate_buttons(window, treeview):
@@ -271,7 +278,7 @@ def generate_buttons(window, treeview):
     delete_button.pack(side=TOP, pady=50)
 
     # Botón "Export"
-    export_button = Button(buttons_frame, text="Export", command=lambda: export_to_csv(treeview, columns))
+    export_button = Button(buttons_frame, text="Export", command=lambda: export_to_csv(treeview, _columns))
     export_button.pack(side=TOP, pady=50)
 
     # Ponemos un componente de relleno en la parte inferior para poder centrar los botones verticalmente
@@ -300,15 +307,16 @@ def export_to_csv(treeview, columns):
     confirm = askyesno(title="Confirmation", message=f"Do you want to export the treeview in a .csv file?") # Mostramos un popup para confirmar o no que queremos el treeview en un fichero .csv
     if confirm: # Si hemos confirmado
         file_name = "treeview.csv"
-        csv_file = path.join(user_desktop_directory, file_name) # Esto une el directorio de escritorio de usuario y "treeview.csv" para formar una ruta completa donde se encuentra el archivo .csv
+        csv_file = path.join(_user_desktop_directory, file_name) # Esto une el directorio de escritorio de usuario y "treeview.csv" para formar una ruta completa donde se encuentra el archivo .csv
         with open(csv_file, "w", newline="") as file:
             file_writer = writer(file)
             file_writer.writerow(columns)  # Escribimos los nombres de las columnas
             for row_id in treeview.get_children():
                 row = treeview.item(row_id)["values"]
                 file_writer.writerow(row)
+        showinfo(title="Info", message="The treeview was exported in a .csv file")
 
 # Si el nombre del módulo es igual a __main__ se ejecutará el código (esto se hace por si queremos utilizar este código como un módulo, y no queremos que ejecute el código del main)
 if __name__ == "__main__":
     # Ejecutamos la función principal del programa
-    main()
+    _main()
