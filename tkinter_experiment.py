@@ -6,6 +6,7 @@ from os import path
 from matplotlib.pyplot import subplots, close, show
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from csv import writer
+# from atexit import register
 
 # Variables globales
 _theme_name = "cyborg"
@@ -15,7 +16,8 @@ _minimum_window_height = 600
 _columns = ("file_name", "total_number_events", "number_cluster_events", "percentage_number_events_total", "mfi_cluster") # Definimos las columnas del treeview
 _user_directory = path.expanduser("~") # Esto obtiene el directorio de usuario
 _user_desktop_directory = path.join(_user_directory, "Desktop") # Esto obtiene el directorio de escritorio de usuario
-_fcs_file = r"C:\Users\david\Desktop\1.fcs"
+_fcs_file_name = "1.fcs"
+_fcs_file = path.join(_user_desktop_directory, _fcs_file_name)
 _xchannel = "R1-A"
 _ychannel = "B8-A"
 _scale = "log"
@@ -36,8 +38,11 @@ def _main():
     # El estado de la ventana será maximizado
     # window.state("zoomed")
 
+    # Generamos el marco de la tabla de datos
+    treeview_frame = generate_tree_view_frame(window)
+    
     # Generamos la tabla de datos
-    treeview = generate_treeview(window)
+    treeview = generate_treeview(window, treeview_frame)
 
     # Generamos los botones
     generate_buttons(window, treeview)
@@ -74,15 +79,22 @@ def window_size_placement(window):
     # Posiciona la ventana en el centro de la pantalla
     window.geometry(f"{_minimum_window_width}x{_minimum_window_height}+{position_right}+{position_top}")
 
-# Función que genera la tabla con los datos
-def generate_treeview(window):
+# Función que genera el marco de la tabla de datos
+def generate_tree_view_frame(window):
     '''
-    Función que genera la tabla con los datos
+    Función que genera el marco de la tabla de datos
     '''
-    # Creamos un frame en el que generaremos el treeview
+    # Creamos un marco en el que generaremos el treeview
     treeview_frame = Frame(window)
     treeview_frame.place(relx=0.2, rely=0, relwidth=0.8, relheight=0.5)
 
+    return treeview_frame
+
+# Función que genera la tabla con los datos
+def generate_treeview(window, treeview_frame):
+    '''
+    Función que genera la tabla con los datos
+    '''
     # Creamos el Treeview
     treeview = Treeview(treeview_frame, bootstyle=SUCCESS, columns=_columns, show=HEADINGS) # NOTA: Para mostrar la columna #0, poner el atributo show=TREEHEADINGS
     treeview.pack(fill=BOTH, expand=True, padx=(0, 20))
@@ -214,12 +226,23 @@ def median_fluorescence_intensity_cluster_interest(experiment_flow_peaks):
     else:
         return sorted_data[total_number_data // 2]
 
+# Función que genera el marco del canvas
+# def generate_canvas_frame(window):
+#     '''
+#     Función que genera el marco del canvas
+#     '''
+#     # Creamos un marco en el que generaremos el canvas
+#     canvas_frame = Frame(window)
+#     canvas_frame.place(relx=0.2, rely=0.5, relwidth=0.8, relheight=0.5)
+
+#     return canvas_frame
+
 # Función que pinta los eventos del cluster en una gráfica en la ventana del programa
 def generate_canvas(window, experiment_flow_peaks):
     '''
     Función que pinta los eventos del cluster en una gráfica en la ventana del programa
     '''
-    # Creamos un frame en el que generaremos el canvas
+    # Creamos un marco en el que generaremos el canvas
     canvas_frame = Frame(window)
     canvas_frame.place(relx=0.2, rely=0.5, relwidth=0.8, relheight=0.5)
 
@@ -242,11 +265,15 @@ def generate_canvas(window, experiment_flow_peaks):
     figure_canvas_tk_agg.draw()
     figure_canvas_tk_agg = figure_canvas_tk_agg.get_tk_widget()
     figure_canvas_tk_agg.pack(fill=BOTH, expand=True, padx=100, pady=20)
+
+    # Cerramos la figura para que el programa no se quede pillado al cerrarlo
     close(fig=figure)
 
     # Botón "View graph in window"
     # view_graph_window_button = Button(canvas_frame, text="View graph in window", command=lambda: show_graph_window())
     # view_graph_window_button.pack(side=BOTTOM, padx=10, pady=20)
+
+    # register(lambda: close(fig=figure))
 
 # Función que muestra la gráfica en ventana
 # def show_graph_window():
@@ -306,8 +333,8 @@ def export_to_csv(treeview, columns):
     '''
     confirm = askyesno(title="Confirmation", message=f"Do you want to export the treeview in a .csv file?") # Mostramos un popup para confirmar o no que queremos el treeview en un fichero .csv
     if confirm: # Si hemos confirmado
-        file_name = "treeview.csv"
-        csv_file = path.join(_user_desktop_directory, file_name) # Esto une el directorio de escritorio de usuario y "treeview.csv" para formar una ruta completa donde se encuentra el archivo .csv
+        csv_file_name = "treeview.csv"
+        csv_file = path.join(_user_desktop_directory, csv_file_name) # Esto une el directorio de escritorio de usuario y "treeview.csv" para formar una ruta completa donde se encuentra el archivo .csv
         with open(csv_file, "w", newline="") as file:
             file_writer = writer(file)
             file_writer.writerow(columns)  # Escribimos los nombres de las columnas
