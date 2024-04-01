@@ -1,12 +1,12 @@
 from ttkbootstrap import Window, Frame, Label, Button, Treeview, Scrollbar, TOP, SUCCESS, HEADINGS, BOTH, CENTER, HORIZONTAL, VERTICAL, RIGHT, Y, BOTTOM, X, END
 from tkinter.messagebox import askyesno, showwarning, showinfo
+from tkinter.filedialog import askopenfilenames
 from cytoflow import Tube, ImportOp, ThresholdOp, DensityGateOp, FlowPeaksOp
 from numpy import argmax, sort
 from os import path
 from matplotlib.pyplot import subplots, close, show
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from csv import writer
-# from atexit import register
 
 # Variables globales
 _theme_name = "cyborg"
@@ -16,8 +16,6 @@ _minimum_window_height = 600
 _columns = ("file_name", "total_number_events", "number_cluster_events", "percentage_number_events_total", "mfi_cluster") # Definimos las columnas del treeview
 _user_directory = path.expanduser("~") # Esto obtiene el directorio de usuario
 _user_desktop_directory = path.join(_user_directory, "Desktop") # Esto obtiene el directorio de escritorio de usuario
-_fcs_file_name = "1.fcs"
-_fcs_file = path.join(_user_desktop_directory, _fcs_file_name)
 _xchannel = "R1-A"
 _ychannel = "B8-A"
 _scale = "log"
@@ -34,18 +32,20 @@ def _main():
     
     # Dimensionamos y posicionamos la ventana en la pantalla
     window_size_placement(window)
-
+    
     # El estado de la ventana será maximizado
     # window.state("zoomed")
 
-    # Generamos el marco de la tabla de datos
-    treeview_frame = generate_tree_view_frame(window)
+    # Generamos los marcos de la ventana del programa
+    buttons_frame = generate_buttons_frame(window) # Generamos el marco de los botones
+    treeview_frame = generate_treeview_frame(window) # Generamos el marco de la tabla de datos
+    canvas_frame = generate_canvas_frame(window) # Generamos el marco de la tabla de datos
     
     # Generamos la tabla de datos
-    treeview = generate_treeview(window, treeview_frame)
+    treeview = generate_treeview(canvas_frame, treeview_frame)
 
     # Generamos los botones
-    generate_buttons(window, treeview)
+    generate_buttons(buttons_frame, canvas_frame, treeview)
 
     # Generamos el hilo que genera la ventana del programa
     window.mainloop()
@@ -79,8 +79,19 @@ def window_size_placement(window):
     # Posiciona la ventana en el centro de la pantalla
     window.geometry(f"{_minimum_window_width}x{_minimum_window_height}+{position_right}+{position_top}")
 
+# Función que genera el marco de los botones
+def generate_buttons_frame(window):
+    '''
+    Función que genera el marco de los botones
+    '''
+    # Creamos un frame en el que generaremos los botones
+    buttons_frame = Frame(window)
+    buttons_frame.place(relx=0, rely=0, relwidth=0.2, relheight=1)
+
+    return buttons_frame
+
 # Función que genera el marco de la tabla de datos
-def generate_tree_view_frame(window):
+def generate_treeview_frame(window):
     '''
     Función que genera el marco de la tabla de datos
     '''
@@ -90,8 +101,19 @@ def generate_tree_view_frame(window):
 
     return treeview_frame
 
+# Función que genera el marco del canvas
+def generate_canvas_frame(window):
+    '''
+    Función que genera el marco del canvas
+    '''
+    # Creamos un marco en el que generaremos el canvas
+    canvas_frame = Frame(window)
+    canvas_frame.place(relx=0.2, rely=0.5, relwidth=0.8, relheight=0.5)
+
+    return canvas_frame
+
 # Función que genera la tabla con los datos
-def generate_treeview(window, treeview_frame):
+def generate_treeview(canvas_frame, treeview_frame):
     '''
     Función que genera la tabla con los datos
     '''
@@ -114,8 +136,9 @@ def generate_treeview(window, treeview_frame):
     # Añadimos los scrollbars del treeview
     add_treeview_scrollbars(treeview_frame, treeview)
 
-    # Añadimos los datos al treeview
-    treeview = add_data_treeview(window, treeview)
+    # Seleccionamos los ficheros .fcs que queramos cargar los datos
+    showinfo(title="Info", message="Select the fcs files")
+    select_fcs_files(canvas_frame, treeview)
 
     return treeview
 
@@ -131,43 +154,43 @@ def add_treeview_scrollbars(treeview_frame, treeview):
     horizontal_scrollbar.pack(side=BOTTOM, fill=X, pady=5)
 
 # Función que añade los datos al treeview
-def add_data_treeview(window, treeview):
+def add_data_treeview(canvas_frame, treeview, fcs_file):
     '''
     Función que añade los datos al treeview
     '''
-    treeview.insert("", END, values=new_experiment(window, _fcs_file))
-    treeview.insert("", END, values=("A"))
-    treeview.insert("", END, values=("B"))
-    treeview.insert("", END, values=("C"))
-    treeview.insert("", END, values=("D"))
-    treeview.insert("", END, values=("E"))
-    treeview.insert("", END, values=("F"))
-    treeview.insert("", END, values=("G"))
-    treeview.insert("", END, values=("H"))
-    treeview.insert("", END, values=("I"))
-    treeview.insert("", END, values=("J"))
-    treeview.insert("", END, values=("K"))
-    treeview.insert("", END, values=("L"))
-    treeview.insert("", END, values=("M"))
-    treeview.insert("", END, values=("N"))
-    treeview.insert("", END, values=("Ñ"))
-    treeview.insert("", END, values=("O"))
-    treeview.insert("", END, values=("P"))
-    treeview.insert("", END, values=("Q"))
-    treeview.insert("", END, values=("R"))
-    treeview.insert("", END, values=("S"))
-    treeview.insert("", END, values=("T"))
-    treeview.insert("", END, values=("U"))
-    treeview.insert("", END, values=("V"))
-    treeview.insert("", END, values=("W"))
-    treeview.insert("", END, values=("X"))
-    treeview.insert("", END, values=("Y"))
-    treeview.insert("", END, values=("Z"))
+    treeview.insert("", END, values=new_experiment(canvas_frame, fcs_file))
+    # treeview.insert("", END, values=("A"))
+    # treeview.insert("", END, values=("B"))
+    # treeview.insert("", END, values=("C"))
+    # treeview.insert("", END, values=("D"))
+    # treeview.insert("", END, values=("E"))
+    # treeview.insert("", END, values=("F"))
+    # treeview.insert("", END, values=("G"))
+    # treeview.insert("", END, values=("H"))
+    # treeview.insert("", END, values=("I"))
+    # treeview.insert("", END, values=("J"))
+    # treeview.insert("", END, values=("K"))
+    # treeview.insert("", END, values=("L"))
+    # treeview.insert("", END, values=("M"))
+    # treeview.insert("", END, values=("N"))
+    # treeview.insert("", END, values=("Ñ"))
+    # treeview.insert("", END, values=("O"))
+    # treeview.insert("", END, values=("P"))
+    # treeview.insert("", END, values=("Q"))
+    # treeview.insert("", END, values=("R"))
+    # treeview.insert("", END, values=("S"))
+    # treeview.insert("", END, values=("T"))
+    # treeview.insert("", END, values=("U"))
+    # treeview.insert("", END, values=("V"))
+    # treeview.insert("", END, values=("W"))
+    # treeview.insert("", END, values=("X"))
+    # treeview.insert("", END, values=("Y"))
+    # treeview.insert("", END, values=("Z"))
 
     return treeview
 
 # Función en la que aplicamos operaciones sobre el experimento y retornamos: el nombre del fichero, el nº de eventos total, el nº de eventos del cluster de interés, el % que representa el nº de eventos del cluster de interés sobre el total y la IMF del cluster de interés
-def new_experiment(window, fcs_file):
+def new_experiment(canvas_frame, fcs_file):
     '''
     Función en la que aplicamos operaciones sobre el experimento y retornamos: el nombre del fichero, el nº de eventos total, el nº de eventos del cluster de interés, el % que representa el nº de eventos del cluster de interés sobre el total y la IMF del cluster de interés
     '''
@@ -196,7 +219,10 @@ def new_experiment(window, fcs_file):
     argmax(experiment_flow_peaks[[_cluster_name]].groupby(by=experiment_flow_peaks[_cluster_name]).count())
 
     # Una vez realizadas las opereaciones, pintamos la gráfica de puntos en la ventana del programa
-    generate_canvas(window, experiment_flow_peaks)
+    generate_canvas(canvas_frame, experiment_flow_peaks)
+
+    # Y generamos el botón por si queremos visualizar la gráfica en una ventana a parte
+    generate_canvas_button(canvas_frame, experiment_flow_peaks)
 
     # Asignamos a variables los datos que queremos retornar del experimento
     file_name = path.basename(fcs_file)
@@ -226,26 +252,11 @@ def median_fluorescence_intensity_cluster_interest(experiment_flow_peaks):
     else:
         return sorted_data[total_number_data // 2]
 
-# Función que genera el marco del canvas
-# def generate_canvas_frame(window):
-#     '''
-#     Función que genera el marco del canvas
-#     '''
-#     # Creamos un marco en el que generaremos el canvas
-#     canvas_frame = Frame(window)
-#     canvas_frame.place(relx=0.2, rely=0.5, relwidth=0.8, relheight=0.5)
-
-#     return canvas_frame
-
 # Función que pinta los eventos del cluster en una gráfica en la ventana del programa
-def generate_canvas(window, experiment_flow_peaks):
+def generate_canvas(canvas_frame, experiment_flow_peaks, clic_view_graph_window_button=False):
     '''
     Función que pinta los eventos del cluster en una gráfica en la ventana del programa
     '''
-    # Creamos un marco en el que generaremos el canvas
-    canvas_frame = Frame(window)
-    canvas_frame.place(relx=0.2, rely=0.5, relwidth=0.8, relheight=0.5)
-
     data_frame = experiment_flow_peaks.data
 
     # Dibujamos la gráfica de puntos
@@ -266,51 +277,77 @@ def generate_canvas(window, experiment_flow_peaks):
     figure_canvas_tk_agg = figure_canvas_tk_agg.get_tk_widget()
     figure_canvas_tk_agg.pack(fill=BOTH, expand=True, padx=100, pady=20)
 
+    # Si hemos pulsado el botón de ver gráfica en ventana
+    if clic_view_graph_window_button:
+        show()
+
     # Cerramos la figura para que el programa no se quede pillado al cerrarlo
     close(fig=figure)
 
-    # Botón "View graph in window"
-    # view_graph_window_button = Button(canvas_frame, text="View graph in window", command=lambda: show_graph_window())
-    # view_graph_window_button.pack(side=BOTTOM, padx=10, pady=20)
-
-    # register(lambda: close(fig=figure))
+# Función que genera el botón de ver la gráfica en ventana
+def generate_canvas_button(canvas_frame, experiment_flow_peaks):
+    '''
+    Función que genera el botón de ver la gráfica en ventana
+    '''
+    # Botón ver gráfica en ventana
+    view_graph_window_button = Button(canvas_frame, text="View graph in window", command=lambda: show_graph_window(canvas_frame, experiment_flow_peaks))
+    view_graph_window_button.pack(side=BOTTOM, padx=10, pady=20)
 
 # Función que muestra la gráfica en ventana
-# def show_graph_window():
-#     '''
-#     Función que muestra la gráfica en ventana
-#     '''
-#     show()
+def show_graph_window(canvas_frame, experiment_flow_peaks):
+    '''
+    Función que muestra la gráfica en ventana
+    '''
+    # Generamos el canvas y los mostramos en una ventana
+    generate_canvas(canvas_frame, experiment_flow_peaks, clic_view_graph_window_button=True)
 
 # Función que genera los botones
-def generate_buttons(window, treeview):
+def generate_buttons(buttons_frame, canvas_frame, treeview):
     '''
     Función que genera los botones
     '''
-    # Creamos un frame en el que generaremos los botones
-    buttons_frame = Frame(window)
-    buttons_frame.place(relx=0, rely=0, relwidth=0.2, relheight=1)
-
     # Ponemos un componente de relleno en la parte superior para poder centrar los botones verticalmente
     label1 = Label(buttons_frame)
     label1.pack(side=TOP, expand=True)
     
     # Creamos los botones
-    # Botón "Load files"
-    load_files_button = Button(buttons_frame, text="Load files")
+    # Botón cargar archivos
+    load_files_button = Button(buttons_frame, text="Load files", command=lambda: select_fcs_files(canvas_frame, treeview))
     load_files_button.pack(side=TOP, pady=50)
 
-    # Botón "Delete"
+    # Botón borrar
     delete_button = Button(buttons_frame, text="Delete", command=lambda: delete_row(treeview))
     delete_button.pack(side=TOP, pady=50)
 
-    # Botón "Export"
+    # Botón exportar
     export_button = Button(buttons_frame, text="Export", command=lambda: export_to_csv(treeview, _columns))
     export_button.pack(side=TOP, pady=50)
 
-    # Ponemos un componente de relleno en la parte inferior para poder centrar los botones verticalmente
+    # Y también ponemos otro componente de relleno en la parte inferior para poder centrar los botones verticalmente
     label2 = Label(buttons_frame)
     label2.pack(side=TOP, expand=True)
+
+# Función que selecciona archivos .fcs
+def select_fcs_files(canvas_frame, treeview):
+    '''
+    Función que selecciona archivos .fcs
+    '''
+    if treeview.get_children(): # Si el treeview contiene alguna línea
+        treeview = delete_existing_elements_treeview(treeview) # Vaciamos el treeview
+
+    file_paths = askopenfilenames(initialdir=_user_desktop_directory, filetypes=[("FCS files", "*.fcs")]) # Abre el cuadro de diálogo para seleccionar archivos
+    for fcs_file in file_paths:
+        treeview = add_data_treeview(canvas_frame, treeview, fcs_file)
+
+# Función que elimina todos los elementos existentes en el treeview
+def delete_existing_elements_treeview(treeview):
+    '''
+    Función que elimina todos los elementos existentes en el treeview
+    '''
+    for i in treeview.get_children():
+        treeview.delete(i)
+    
+    return treeview
 
 # Función que borra filas
 def delete_row(treeview):
@@ -331,8 +368,7 @@ def export_to_csv(treeview, columns):
     '''
     Función que exporta el treeview a un fichero .csv
     '''
-    confirm = askyesno(title="Confirmation", message=f"Do you want to export the treeview in a .csv file?") # Mostramos un popup para confirmar o no que queremos el treeview en un fichero .csv
-    if confirm: # Si hemos confirmado
+    if treeview.get_children(): # Si el treeview contiene alguna línea se exportarán los datos del treeview, sino aparecerá una advertencia diciendo que no hay datos que exportar del treeview
         csv_file_name = "treeview.csv"
         csv_file = path.join(_user_desktop_directory, csv_file_name) # Esto une el directorio de escritorio de usuario y "treeview.csv" para formar una ruta completa donde se encuentra el archivo .csv
         with open(csv_file, "w", newline="") as file:
@@ -341,7 +377,9 @@ def export_to_csv(treeview, columns):
             for row_id in treeview.get_children():
                 row = treeview.item(row_id)["values"]
                 file_writer.writerow(row)
-        showinfo(title="Info", message="The treeview was exported in a .csv file")
+        showinfo(title="Info", message="The treeview was exported to a .csv file on the desktop")
+    else:
+        showwarning(title="Warning", message="There is no data in the treeview to export") # Mostramos un cuadro de diálogo de advertencia
 
 # Si el nombre del módulo es igual a __main__ se ejecutará el código (esto se hace por si queremos utilizar este código como un módulo, y no queremos que ejecute el código del main)
 if __name__ == "__main__":
