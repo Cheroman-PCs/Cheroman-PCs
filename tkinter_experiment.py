@@ -4,29 +4,59 @@ from tkinter.messagebox import showinfo, askyesno, showwarning
 from tkinter.filedialog import askopenfilenames
 from typing import Tuple
 from cytoflow import Tube, ImportOp, Experiment, ThresholdOp, DensityGateOp, FlowPeaksOp
+from pandas import DataFrame, Categorical
+from pandas.core.groupby import DataFrameGroupBy
 from numpy import float64, ndarray, argmax, sort
 from csv import writer
-# from openpyxl import *
-# from pdfkit import *
-from pandas.core.frame import DataFrame
+from openpyxl import Workbook
+from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl.cell import Cell
+from openpyxl.styles import PatternFill, Font, Border, Side, Alignment
+from pdfkit import configuration, from_string
 from matplotlib.figure import Figure
-from matplotlib.axes._axes import Axes
+from matplotlib.axes import Axes
 from matplotlib.pyplot import subplots, show, close
-from pandas.core.arrays.categorical import Categorical
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-# Variables globales
+# Constantes
 _THEME_NAME: str = "cyborg"
 _APPLICATION_TITLE: str = "Tkinter experiment"
 _MINIMUM_WINDOW_WIDTH: int = 800
 _MINIMUM_WINDOW_HEIGHT: int = 600
-_COLUMNS: tuple = ("file_name", "total_number_events", "number_cluster_events", "percentage_number_events_total", "mfi_cluster") # Definimos las columnas del treeview
+_TREEVIEW_COLUMNS: tuple = ("file_name", "total_number_events", "number_cluster_events", "percentage_number_events_total", "mfi_cluster") # Definimos las columnas del treeview
+_GREEN: str = "green"
+_LIGHTGREEN: str = "lightgreen"
+_WHITE: str = "white"
 _USER_DESKTOP_DIRECTORY: str = path.expanduser("~\\Desktop") # Esto obtiene el directorio de escritorio de usuario
+_MAXIMUM: str = "maximum"
+_VALUE: str = "value"
+_MASK: str = "mask"
+_COLUMNS: str = "columns"
+_VALUES: str = "values"
+_TEXT: str = "text"
 _XCHANNEL: str = "R1-A"
 _YCHANNEL: str = "B8-A"
 _SCALE: str = "log"
 _CHANNEL: str = "B4-A"
 _CLUSTER_NAME: str = "FlowPeaks"
+_TOPLEVEL_TITLE: str = "Exportar a..."
+_MINIMUM_TOPLEVEL_WIDTH: int = 300
+_MINIMUM_TOPLEVEL_HEIGHT: int = 200
+_EXPORT_CSV_VALUE: str = "Exportar a .csv"
+_EXPORT_XLSX_VALUE: str = "Exportar a .xlsx"
+_EXPORT_PDF_VALUE: str = "Exportar a .pdf"
+_TREEVIEW_FILE_NAME: str = "treeview"
+_CSV_EXTENSION: str = ".csv"
+_XLSX_EXTENSION: str = ".xlsx"
+_PDF_EXTENSION: str = ".pdf"
+_THIN: str = "thin"
+_A: str = "A"
+_B: str = "B"
+_C: str = "C"
+_D: str = "D"
+_E: str = "E"
+
+# Variables globales
 _experiment_dictionary: dict = {}
 
 # Función principal del programa
@@ -152,20 +182,20 @@ def generate_treeview(treeview_frame: Frame, window: Window) -> Treeview:
     Función que genera la tabla con los datos
     '''
     # Creamos el treeview
-    treeview: Treeview = Treeview(treeview_frame, bootstyle=SUCCESS, columns=_COLUMNS, show=HEADINGS) # NOTA: Para mostrar la columna #0, poner el atributo show=TREEHEADINGS
+    treeview: Treeview = Treeview(treeview_frame, bootstyle=SUCCESS, columns=_TREEVIEW_COLUMNS, show=HEADINGS) # NOTA: Para mostrar la columna #0, poner el atributo show=TREEHEADINGS
     treeview.pack(side=LEFT, fill=BOTH, expand=True, padx=(0, 10))
-    treeview.column(_COLUMNS[0], minwidth=152, width=152, anchor=CENTER)
-    treeview.column(_COLUMNS[1], minwidth=110, width=110, anchor=CENTER)
-    treeview.column(_COLUMNS[2], minwidth=125, width=125, anchor=CENTER)
-    treeview.column(_COLUMNS[3], minwidth=150, width=150, anchor=CENTER)
-    treeview.column(_COLUMNS[4], minwidth=75, width=75, anchor=CENTER)
+    treeview.column(_TREEVIEW_COLUMNS[0], minwidth=147, width=147, anchor=CENTER)
+    treeview.column(_TREEVIEW_COLUMNS[1], minwidth=115, width=115, anchor=CENTER)
+    treeview.column(_TREEVIEW_COLUMNS[2], minwidth=125, width=125, anchor=CENTER)
+    treeview.column(_TREEVIEW_COLUMNS[3], minwidth=150, width=150, anchor=CENTER)
+    treeview.column(_TREEVIEW_COLUMNS[4], minwidth=75, width=75, anchor=CENTER)
 
     # Definimos las cabeceras
-    treeview.heading(_COLUMNS[0], text="File name")
-    treeview.heading(_COLUMNS[1], text="Total no. of events")
-    treeview.heading(_COLUMNS[2], text="No. cluster events")
-    treeview.heading(_COLUMNS[3], text="% no. of events over total")
-    treeview.heading(_COLUMNS[4], text="MFI cluster")
+    treeview.heading(_TREEVIEW_COLUMNS[0], text="File name")
+    treeview.heading(_TREEVIEW_COLUMNS[1], text="Total no. of events")
+    treeview.heading(_TREEVIEW_COLUMNS[2], text="No. cluster events")
+    treeview.heading(_TREEVIEW_COLUMNS[3], text="% no. of events over total")
+    treeview.heading(_TREEVIEW_COLUMNS[4], text="MFI cluster")
 
     # Añadimos los scrollbars del treeview
     add_treeview_scrollbars(treeview_frame, treeview)
@@ -182,7 +212,7 @@ def add_treeview_scrollbars(treeview_frame: Frame, treeview: Treeview) -> None:
     Función que añade los scrollbars del treeview
     '''
     style: Style = Style()
-    style.configure("Vertical.TScrollbar", background="green", troughcolor="lightgreen", arrowcolor="white")
+    style.configure("Vertical.TScrollbar", background=_GREEN, troughcolor=_LIGHTGREEN, arrowcolor=_WHITE)
 
     vertical_scrollbar: Scrollbar = Scrollbar(treeview_frame, orient=VERTICAL, command=treeview.yview)
     treeview.configure(yscrollcommand=vertical_scrollbar.set)
@@ -203,7 +233,7 @@ def select_fcs_files(treeview: Treeview, window: Window) -> None:
         floodgauge_frame.place(relx=0.5, rely=0.5, relwidth=0.3, relheight=0.1, anchor=CENTER)
 
         style = Style()
-        style.configure("Horizontal.TFloodgauge", background="green", troughcolor ="lightgreen", bordercolor="green")
+        style.configure("Horizontal.TFloodgauge", background=_GREEN, troughcolor =_LIGHTGREEN, bordercolor=_GREEN)
 
         percentage: str = "0"
         floodgauge: Floodgauge = Floodgauge(floodgauge_frame, length=100, mode=DETERMINATE, style="Horizontal.TFloodgauge", mask=f"{update_floodgauge_mask(percentage)}", font=("Helvetica", 16, "bold"))
@@ -234,15 +264,15 @@ def process_files(floodgauge: Floodgauge, file_paths: str, treeview: Treeview, f
     Función que procesa los archivos
     '''
     number_file_paths: int = len(file_paths)
-    floodgauge["maximum"] = number_file_paths
+    floodgauge[_MAXIMUM] = number_file_paths
 
     for i, fcs_file in enumerate(file_paths):
         add_data_treeview(treeview, fcs_file) # Añadimos los datos al treeview
 
-        floodgauge["value"] = i + 1
+        floodgauge[_VALUE] = i + 1
 
-        percentage: str = round((floodgauge["value"] / number_file_paths) * 100)
-        floodgauge["mask"] = f"{update_floodgauge_mask(percentage)}"
+        percentage: str = round((floodgauge[_VALUE] / number_file_paths) * 100)
+        floodgauge[_MASK] = f"{update_floodgauge_mask(percentage)}"
         
         floodgauge.update()
     
@@ -289,13 +319,21 @@ def new_experiment(fcs_file: str) -> Tuple[str, int, int, str, str]:
     flow_peaks_op: FlowPeaksOp = FlowPeaksOp(name=_CLUSTER_NAME, channels=[_XCHANNEL, _YCHANNEL], scale={_XCHANNEL : _SCALE, _YCHANNEL : _SCALE}, h0=3)
     flow_peaks_op.estimate(experiment_density_gate)
     experiment_flow_peaks: Experiment = flow_peaks_op.apply(experiment_density_gate)
-    argmax(experiment_flow_peaks[[_CLUSTER_NAME]].groupby(by=experiment_flow_peaks[_CLUSTER_NAME]).count())
+    data_frame_experiment_flow_peaks_cluster_name: DataFrame = experiment_flow_peaks[[_CLUSTER_NAME]]
+    data_frame_group_by_experiment_flow_peaks_cluster_name: DataFrameGroupBy = data_frame_experiment_flow_peaks_cluster_name.groupby(by=experiment_flow_peaks[_CLUSTER_NAME])
+    argmax(data_frame_group_by_experiment_flow_peaks_cluster_name.count())
 
     # Asignamos a variables los datos que queremos retornar del experimento
     file_name: str = path.basename(fcs_file)
-    total_number_events: int = experiment_import.data.shape[0]
-    number_events_cluster_interest: int = experiment_flow_peaks.data.shape[0]
+
+    data_frame_experiment_import: DataFrame = experiment_import.data
+    total_number_events: int = data_frame_experiment_import.shape[0]
+
+    data_frame_experiment_flow_peaks: DataFrame = experiment_flow_peaks.data
+    number_events_cluster_interest: int = data_frame_experiment_flow_peaks.shape[0]
+
     percentage_represents_number_events_cluster_interest_total: str = "{:.0%}".format(round(number_events_cluster_interest / total_number_events, 2))
+
     mfi_cluster_interest: str = "{:.2f}".format(median_fluorescence_intensity_cluster_interest(experiment_flow_peaks))
 
     # Guardamos el experimento en un diccionario, tomando como clave el nombre del fichero .fcs
@@ -333,7 +371,7 @@ def generate_buttons(window, buttons_frame: Frame, canvas_frame: Frame, canvas_b
     # Creamos los botones
     # Creamos un estilo
     style: Style = Style()
-    style.configure("TButton", background="green", foreground="lightgreen", font=("Helvetica", 12, "bold"))
+    style.configure("TButton", background=_GREEN, foreground=_LIGHTGREEN, font=("Helvetica", 12, "bold"))
 
     # Botón cargar archivos
     load_files_button: Button = Button(buttons_frame, text="Load files", command=lambda: select_fcs_files(treeview, window))
@@ -358,10 +396,11 @@ def delete_row(treeview: Treeview, canvas_frame: Frame, canvas_button_frame: Fra
     '''
     selected_items: tuple = treeview.selection() # Esto devuelve una lista de los ID de las filas seleccionadas
     if selected_items: # Si hay alguna fila seleccionada
-        confirm: bool = askyesno(title="Confirmation", message=f"Are you sure you want to delete {len(selected_items)} row(s)?") # Mostramos un popup para confirmar o no que queremos borrar las filas
+        #row(s)
+        confirm: bool = askyesno(title="Confirmation", message=f"Are you sure you want to delete {len(selected_items)} row{'' if len(selected_items) == 1 else 's'}?") # Mostramos un popup para confirmar o no que queremos borrar las filas
         if confirm: # Si hemos confirmado
             for selected_item in selected_items: # Borramos las filas seleccionadas
-                valores = treeview.item(selected_item, "values") # Obtenemos los valores de la fila
+                valores = treeview.item(selected_item, _VALUES) # Obtenemos los valores de la fila
                 experiment = valores[0] # Obtenemos el valor de la primera columna
                 if experiment in _experiment_dictionary: # Comprobamos si la clave está en el diccionario
                     del _experiment_dictionary[experiment] # Borramos el elemento del diccionario
@@ -380,92 +419,242 @@ def export(window: Window, treeview: Treeview) -> None:
     Función que exporta el treeview a un fichero .csv
     '''
     if treeview.get_children(): # Si el treeview contiene alguna línea, se exportarán los datos del treeview, sino, aparecerá una advertencia diciendo que no hay datos que exportar del treeview
-        toplevel = Toplevel(window)
-        toplevel.title("Exportar a...")
-        toplevel.minsize(200, 100)
+        toplevel: Toplevel = generate_toplevel(window)
 
         toplevel_size_placement(toplevel)
 
-        string_var = StringVar()
+        options_frame: Frame = generate_options_frame(toplevel)
+        accept_button_frame: Frame = generate_accept_button_frame(toplevel)
 
-        EXPORT_CSV_VALUE: str = "Exportar a .csv"
-        EXPORT_XLSX_VALUE: str = "Exportar a .xlsx"
-        EXPORT_PDF_VALUE: str = "Exportar a .pdf"
+        string_var: StringVar = StringVar()
 
-        csv_radiobutton = Radiobutton(toplevel, text="Exportar a .csv", variable=string_var, value=EXPORT_CSV_VALUE)
-        csv_radiobutton.pack()
+        csv_radiobutton = Radiobutton(options_frame, text="Exportar a .csv", variable=string_var, value=_EXPORT_CSV_VALUE)
+        csv_radiobutton.pack(side=TOP, pady=(50, 0))
 
-        xlsx_radiobutton = Radiobutton(toplevel, text="Exportar a .xlsx", variable=string_var, value=EXPORT_XLSX_VALUE)
-        xlsx_radiobutton.pack()
+        xlsx_radiobutton = Radiobutton(options_frame, text="Exportar a .xlsx", variable=string_var, value=_EXPORT_XLSX_VALUE)
+        xlsx_radiobutton.pack(side=TOP)
 
-        pdf_radiobutton = Radiobutton(toplevel, text="Exportar a .pdf", variable=string_var, value=EXPORT_PDF_VALUE)
-        pdf_radiobutton.pack()
+        pdf_radiobutton = Radiobutton(options_frame, text="Exportar a .pdf", variable=string_var, value=_EXPORT_PDF_VALUE)
+        pdf_radiobutton.pack(side=TOP, pady=(0, 50))
 
-        def on_accept():
-            if string_var.get() == EXPORT_CSV_VALUE:
-                export_to_csv(treeview)
-            elif string_var.get() == EXPORT_XLSX_VALUE:
-                export_to_xslx(treeview)
-            elif string_var.get() == EXPORT_PDF_VALUE:
-                export_to_pdf(treeview)
-            else:
-                toplevel.destroy()
-                showwarning(title="Warning", message="No export method selected") # Mostramos un cuadro de diálogo de advertencia
-                export(window, treeview)
-
-        accept_button = Button(toplevel, text="Accept", command=on_accept)
+        accept_button = Button(accept_button_frame, text="Accept", command=lambda: on_accept(string_var, treeview, toplevel, window))
         accept_button.pack()
     else:
         showwarning(title="Warning", message="There is no data in the treeview to export") # Mostramos un cuadro de diálogo de advertencia
 
-# TODOFunción que dimensiona y posiciona la ventana en la pantalla
+# Función que genera el nivel superior
+def generate_toplevel(window: Window) -> Toplevel:
+    '''
+    Función que genera el nivel superior
+    '''
+    # Generamos el nivel superior con un título y unas dimensiones mínimas
+    toplevel: Toplevel = Toplevel(window)
+    toplevel.title(_TOPLEVEL_TITLE)
+    toplevel.resizable(False, False)
+    toplevel.minsize(_MINIMUM_TOPLEVEL_WIDTH, _MINIMUM_TOPLEVEL_HEIGHT)
+
+    # Retornamos el nivel superior
+    return toplevel
+
+# Función que dimensiona y posiciona el nivel superior en la pantalla
 def toplevel_size_placement(toplevel: Toplevel) -> None:
     '''
-    Función que dimensiona y posiciona la ventana en la pantalla
+    Función que dimensiona y posiciona el nivel superior en la pantalla
     '''
     # Obtiene las dimensiones de la pantalla
     screen_width: int = toplevel.winfo_screenwidth()
     screen_height: int = toplevel.winfo_screenheight()
 
     # Calcula la posición del centro
-    position_top: int = int(screen_height / 2 - 100 / 2)
-    position_right: int = int(screen_width / 2 - 200 / 2)
+    position_top: int = int(screen_height / 2 - _MINIMUM_TOPLEVEL_HEIGHT / 2)
+    position_right: int = int(screen_width / 2 - _MINIMUM_TOPLEVEL_WIDTH / 2)
 
-    # Posiciona la ventana en el centro de la pantalla
-    toplevel.geometry(f"200x100+{position_right}+{position_top}")
+    # Posiciona el nivel superior en el centro de la pantalla
+    toplevel.geometry(f"{_MINIMUM_TOPLEVEL_WIDTH}x{_MINIMUM_TOPLEVEL_HEIGHT}+{position_right}+{position_top}")
 
-# TODOFunción que exporta el treeview a un fichero .csv
-def export_to_csv(treeview: Treeview, export_frame: Frame) -> None:
+# Función que genera el marco de las opciones
+def generate_options_frame(toplevel: Toplevel) -> Frame:
+    '''
+    Función que genera el marco de las opciones
+    '''
+    # Creamos un frame en el que generaremos las opciones
+    options_frame: Frame = Frame(toplevel)
+    options_frame.place(relx=0, rely=0, relwidth=1, relheight=0.75)
+
+    return options_frame
+
+# Función que genera el marco del botón aceptar
+def generate_accept_button_frame(toplevel: Toplevel) -> Frame:
+    '''
+    Función que genera el marco del botón aceptar
+    '''
+    # Creamos un frame en el que generaremos el botón aceptar
+    accept_button_frame: Frame = Frame(toplevel)
+    accept_button_frame.place(relx=0, rely=0.75, relwidth=1, relheight=0.25)
+
+    return accept_button_frame
+
+# Función que ejecuta la correspondiente al aceptar según la opción seleccionada
+def on_accept(string_var: StringVar, treeview: Treeview, toplevel: Toplevel, window: Window) -> None:
+    '''
+    Función que ejecuta la correspondiente al aceptar según la opción seleccionada
+    '''
+    option: str = string_var.get()
+
+    if option == _EXPORT_CSV_VALUE:
+        export_to_csv(treeview, toplevel)
+    elif option == _EXPORT_XLSX_VALUE:
+        export_to_xslx(treeview, toplevel)
+    elif option == _EXPORT_PDF_VALUE:
+        export_to_pdf(treeview, toplevel)
+    else:
+        toplevel.destroy()
+        showwarning(title="Warning", message="No export method selected") # Mostramos un cuadro de diálogo de advertencia
+        export(window, treeview)
+
+# Función que exporta el treeview a un fichero .csv
+def export_to_csv(treeview: Treeview, toplevel: Toplevel) -> None:
     '''
     Función que exporta el treeview a un fichero .csv
     '''
-    csv_file_name: str = "treeview.csv"
+    csv_file_name: str = f"{_TREEVIEW_FILE_NAME}{_CSV_EXTENSION}"
     csv_file: str = path.join(_USER_DESKTOP_DIRECTORY, csv_file_name) # Esto une el directorio de escritorio de usuario y "treeview.csv" para formar una ruta completa donde se encuentra el archivo .csv
     with open(csv_file, "w", newline="") as file:
         file_writer = writer(file)
-        file_writer.writerow(_COLUMNS) # Escribimos los nombres de las columnas
+        file_writer.writerow(treeview[_COLUMNS]) # Escribimos los nombres de las columnas
         for row_id in treeview.get_children():
-            row: list = treeview.item(row_id)["values"]
+            row: list = treeview.item(row_id)[_VALUES]
             file_writer.writerow(row)
-    showinfo(title="Info", message="The treeview was exported to a .csv file on the desktop")
+    showinfo(title="Info", message=f"The treeview was exported to a {_CSV_EXTENSION} file on the desktop")
 
-    export_frame.destroy()
+    toplevel.destroy()
 
-# TODOFunción que exporta el treeview a un fichero .xlsx
-def export_to_xslx(treeview: Treeview, export_frame: Frame) -> None:
+# Función que exporta el treeview a un fichero .xlsx
+def export_to_xslx(treeview: Treeview, toplevel: Toplevel) -> None:
     '''
     Función que exporta el treeview a un fichero .xlsx
     '''
+    # Crea un nuevo libro de trabajo
+    workbook: Workbook = Workbook()
 
-    export_frame.destroy()
+    # Selecciona la hoja activa
+    worksheet: Worksheet = workbook.active
+
+    # Definir el estilo de relleno verde y letra negrita
+    pattern_fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+    font = Font(bold=True)
+
+    # Definir el estilo de borde
+    border = Border(left=Side(style=_THIN), right=Side(style=_THIN), top=Side(style=_THIN), bottom=Side(style=_THIN))
+
+    # Agregamos los datos de la tabla de datos
+    treeview_header_text: list = [treeview.heading(col)[_TEXT] for col in treeview[_COLUMNS]] # Obtenemos en una lista los textos que se muestran en las cabeceras de la tabla de datos
+    worksheet.append(treeview_header_text) # Añadimos los textos que se muestran en las cabeceras de la tabla de datos
+    for cell in worksheet[1]: # Recorremos las celdas de la primera fila
+        cell.fill = pattern_fill # Aplicamos un relleno 
+        cell.font = font # Aplicamos una fuente
+        cell.border = border # Aplicamos un borde
+    
+    for row_id in treeview.get_children():
+        row: list = treeview.item(row_id)[_VALUES] # Obtenemos en una lista los datos de la tabla de datos
+        worksheet.append(row) # Añadimos los datos de la tabla de datos
+
+    # Modificamos el ancho de cada columna
+    worksheet.column_dimensions[_A].width = 30.71 # 30.00
+    worksheet.column_dimensions[_B].width = 17.57 # 16.86
+    worksheet.column_dimensions[_C].width = 17.14 # 16.43
+    worksheet.column_dimensions[_D].width = 23.86 # 23.14
+    worksheet.column_dimensions[_E].width = 10.86 # 10.14
+
+    # Centramos los datos de las columnas y aplicamos un borde a cada celda
+    for column in [_A, _B, _C, _D, _E]:
+        cell: Cell
+        for cell in worksheet[column]:
+            cell.alignment = Alignment(horizontal=CENTER)
+            cell.border = border
+    
+    # Guardamos el libro de trabajo
+    xlsx_file_name: str = f"{_TREEVIEW_FILE_NAME}{_XLSX_EXTENSION}"
+    xlsx_file: str = path.join(_USER_DESKTOP_DIRECTORY, xlsx_file_name) # Esto une el directorio de escritorio de usuario y "treeview.xlsx" para formar una ruta completa donde se encuentra el archivo .xlsx
+    workbook.save(xlsx_file)
+    showinfo(title="Info", message=f"The treeview was exported to a {_XLSX_EXTENSION} file on the desktop")
+
+    toplevel.destroy()
 
 # TODOFunción que exporta el treeview a un fichero .pdf
-def export_to_pdf(treeview: Treeview, export_frame: Frame) -> None:
+def export_to_pdf(treeview: Treeview, toplevel: Toplevel) -> None:
     '''
     Función que exporta el treeview a un fichero .pdf
     '''
+    #https://wkhtmltopdf.org/downloads.html
+    WKHTMLTOPDF_PATH="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+    
+    if path.exists(WKHTMLTOPDF_PATH): # Si está instalado "wkhtmltopdf" la ruta exitirá y se podrá crear el PDF, sino saltará un aviso diciendo que no está instalado
+        # Configuración de pdfkit
+        config = configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
 
-    export_frame.destroy()
+        # Creamos una plantilla CSS y HTML
+        CSS: str = """
+        body
+        {
+            font-family: Helvetica;
+        }
+        h1
+        {
+            text-align: center;
+            color: green;
+        }
+        table
+        {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td
+        {
+            border: 1px solid black;
+            padding: 15px;
+            text-align: left;
+        }
+        """
+        
+        HTML: str = f"""
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="UTF-8" />
+                <title>{_TREEVIEW_FILE_NAME.capitalize()}</title>
+                <style>
+                    {CSS}
+                </style>
+            </head>
+            <body>
+                <h1>Tu Título</h1>
+
+                <table id="myTable">
+                    <tr>
+                        <!-- Añade aquí tus encabezados de tabla -->
+                        <th>Encabezado 1</th>
+                        <th>Encabezado 2</th>
+                    </tr>
+                    <!-- Añade aquí tus filas de tabla -->
+                </table>
+
+                <script>
+                    // Aquí puedes añadir tu código JavaScript para rellenar la tabla desde tu fichero de Python
+                </script>
+            </body>
+        </html>
+        """
+
+        # Generamos el PDF
+        pdf_file_name: str = f"{_TREEVIEW_FILE_NAME}{_PDF_EXTENSION}"
+        pdf_file: str = path.join(_USER_DESKTOP_DIRECTORY, pdf_file_name) # Esto une el directorio de escritorio de usuario y "treeview.pdf" para formar una ruta completa donde se encuentra el archivo .xlsx
+        from_string(HTML, pdf_file, configuration=config)
+        showinfo(title="Info", message=f"The treeview was exported to a {_PDF_EXTENSION} file on the desktop")
+    else:
+        showwarning(title="Warning", message="Executable not found. Verify that you have \"wkhtmltopdf\" installed") # Mostramos un cuadro de diálogo de advertencia
+    
+    toplevel.destroy()
 
 # Función que muestra el canvas
 def show_canvas_selected_row_treeview(canvas_frame: Frame, canvas_button_frame: Frame, treeview: Treeview) -> None:
@@ -475,7 +664,7 @@ def show_canvas_selected_row_treeview(canvas_frame: Frame, canvas_button_frame: 
     selected_items: tuple = treeview.selection() # Esto devuelve una lista de los ID de las filas seleccionadas
     if len(selected_items) == 1:
         # Obtenemos el valor de la 1ª columna
-        column_value: str = treeview.item(selected_items[0])["values"][0]
+        column_value: str = treeview.item(selected_items[0])[_VALUES][0]
 
         # Una vez realizadas las operaciones, pintamos la gráfica de puntos en la ventana del programa
         generate_canvas(canvas_frame, column_value)
@@ -496,7 +685,8 @@ def generate_canvas(canvas_frame: Frame, column_value: str, clic_view_graph_wind
     for widget in canvas_frame.winfo_children(): # Destruimos todos los componentes del marco del canvas
         widget.destroy()
     
-    data_frame: DataFrame = _experiment_dictionary.get(column_value).data
+    experiment: Experiment = _experiment_dictionary.get(column_value)
+    data_frame_experiment: DataFrame = experiment.data
 
     # Dibujamos la gráfica de puntos
     figure: Figure
@@ -504,10 +694,10 @@ def generate_canvas(canvas_frame: Frame, column_value: str, clic_view_graph_wind
     figure, axes = subplots()
 
     # Dibujamos los puntos, diferenciando los clusters por color
-    clusters: Categorical = data_frame[_CLUSTER_NAME].unique()
+    clusters: Categorical = data_frame_experiment[_CLUSTER_NAME].unique()
     for cluster in clusters:
-        data_frame_cluster: DataFrame = data_frame[data_frame[_CLUSTER_NAME] == cluster]
-        axes.scatter(data_frame_cluster[_XCHANNEL], data_frame_cluster[_YCHANNEL], label=f"{_CLUSTER_NAME} {cluster}", s=5, color="green")
+        data_frame_cluster: DataFrame = data_frame_experiment[data_frame_experiment[_CLUSTER_NAME] == cluster]
+        axes.scatter(data_frame_cluster[_XCHANNEL], data_frame_cluster[_YCHANNEL], label=f"{_CLUSTER_NAME} {cluster}", s=5, color=_GREEN)
 
     # Mostramos la leyenda
     axes.legend()
