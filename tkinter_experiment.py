@@ -32,7 +32,7 @@ _ICON_IMAGE_NAME: str = "tkinter_experiment_icon.png"
 _ICON_IMAGE_PATH: str = path.join(_BASE_ROUTE, _ICON_IMAGE_NAME) # Esto obtiene la imagen de la pantalla de bienvenida
 _MINIMUM_WINDOW_WIDTH: int = 800
 _MINIMUM_WINDOW_HEIGHT: int = 600
-_BLACK = "black"
+# _BLACK = "black"#FIXME
 _TREEVIEW_COLUMNS: tuple = ("file_name", "total_number_events", "number_cluster_events", "percentage_number_events_total", "mfi_cluster") # Definimos las columnas del treeview
 _GREEN: str = "green"
 _LIGHTGREEN: str = "lightgreen"
@@ -56,7 +56,7 @@ _MINIMUM_EXPORT_TOPLEVEL_WIDTH: int = 300
 _MINIMUM_EXPORT_TOPLEVEL_HEIGHT: int = 200
 _CSV_EXTENSION: str = ".csv"
 _EXPORT_CSV_VALUE: str = f"{_EXPORT_TOPLEVEL_TITLE} {_CSV_EXTENSION}"
-_REPORTS_DIRECTORY_NAME:str = "Reports"
+_REPORTS_DIRECTORY_NAME: str = "Reports"
 _REPORTS_DIRECTORY_PATH: str = path.join(_PROGRAM_DIRECTORY_PATH, _REPORTS_DIRECTORY_NAME) # Esto obtiene el directorio de reportes
 _W: str = "w"
 _XLSX_EXTENSION: str = ".xlsx"
@@ -74,62 +74,6 @@ _D: str = "D"
 _E: str = "E"
 # Variables
 _experiment_dictionary: dict = {}
-
-# Función principal del programa
-def _main() -> None:
-    """
-    Función principal del programa
-    """
-    # Generamos el directorio del programa en el directorio de usuario
-    generate_program_directory()
-
-    # Generamos la ventana del programa
-    window: Window = generate_window()
-    
-    # Dimensionamos y posicionamos la ventana en la pantalla
-    window_size_placement(window)
-
-    #FIXME
-    # # Generamos la pantalla de bienvenida
-    # splash_screen_toplevel: Toplevel = generate_splash_screen_toplevel()
-    
-    # # Dimensionamos y posicionamos el nivel superior de la pantalla de bienvenida
-    # splash_screen_toplevel_size_placement(window, splash_screen_toplevel)
-
-    # # Cargar una imagen para la pantalla de bienvenida
-    # SPLASH_SCREEN_IMAGE_NAME: str = "tkinter_ttkbootstrap_splash_screen.png"
-    # SPLASH_SCREEN_IMAGE_PATH: str = path.join(_BASE_ROUTE, SPLASH_SCREEN_IMAGE_NAME) # Esto obtiene la imagen de la pantalla de bienvenida
-    # splash_screen_photo_image: PhotoImage = PhotoImage(file=SPLASH_SCREEN_IMAGE_PATH)
-    # label = Label(splash_screen_toplevel, image=splash_screen_photo_image)
-    # label.pack()
-    # splash_screen_toplevel.update()
-
-    # MILLISECONDS: int = 5000
-    # window.after(MILLISECONDS, window.deiconify)  # Muestra la ventana principal después de 100ms
-    # window.after(MILLISECONDS, splash_screen_toplevel.destroy)  # Destruye la pantalla de inicio después de 100ms
-    #FIXME
-
-    # El estado de la ventana será maximizado
-    # window.state("zoomed")
-
-    # Generamos los marcos de la ventana del programa
-    buttons_frame: Frame = generate_buttons_frame(window) # Generamos el marco de los botones
-    treeview_frame: Frame = generate_treeview_frame(window) # Generamos el marco de la tabla de datos
-    below_frame: Frame = generate_below_frame(window) # Generamos el marco del botón del canvas
-    canvas_frame: Frame = generate_canvas_frame(below_frame) # Generamos el marco del canvas
-    canvas_button_frame: Frame = generate_canvas_button_frame(below_frame) # Generamos el marco del botón del canvas
-
-    # Generamos la tabla de datos
-    treeview: Treeview = generate_treeview(treeview_frame)
-
-    # Generamos los botones
-    generate_buttons(window, buttons_frame, canvas_frame, canvas_button_frame, treeview)
-
-    # Mostramos el canvas cada vez que seleccionamos una fila del treeview una vez que se ha cargado todo
-    treeview.bind("<<TreeviewSelect>>", lambda event: show_canvas_selected_row_treeview(canvas_frame, canvas_button_frame, treeview))
-
-    # Generamos el hilo que genera la ventana del programa
-    window.mainloop()
 
 # Función que genera el directorio del programa en el directorio de usuario
 def generate_program_directory() -> None:
@@ -290,10 +234,10 @@ def add_treeview_scrollbars(treeview_frame: Frame, treeview: Treeview) -> None:
     """
     Función que añade los scrollbars del treeview
     """
-    style: Style = Style()
-    style.configure("Vertical.TScrollbar", background=_GREEN, troughcolor=_LIGHTGREEN, arrowcolor=_WHITE)
+    custom_vertical_t_scrollbar_style: Style = Style()
+    custom_vertical_t_scrollbar_style.configure("custom.Vertical.TScrollbar", background=_GREEN, troughcolor=_LIGHTGREEN, arrowcolor=_WHITE)
 
-    vertical_scrollbar: Scrollbar = Scrollbar(treeview_frame, orient=VERTICAL, command=treeview.yview)
+    vertical_scrollbar: Scrollbar = Scrollbar(treeview_frame, orient=VERTICAL, command=treeview.yview, style="custom.Vertical.TScrollbar")
     treeview.configure(yscrollcommand=vertical_scrollbar.set)
     vertical_scrollbar.pack(side=RIGHT, fill=Y)
 
@@ -308,19 +252,19 @@ def generate_buttons(window, buttons_frame: Frame, canvas_frame: Frame, canvas_b
     
     # Creamos los botones
     # Creamos un estilo
-    style: Style = Style()
-    style.configure("TButton", background=_GREEN, foreground=_LIGHTGREEN, font=("Helvetica", 12, "bold"))
+    custom_t_button_style: Style = Style()
+    custom_t_button_style.configure("custom.TButton", background=_GREEN, foreground=_LIGHTGREEN, font=("Helvetica", 12, "bold"))
 
     # Botón cargar archivos
-    load_files_button: Button = Button(buttons_frame, text="Load files", command=lambda: select_fcs_files(treeview, window))
+    load_files_button: Button = Button(buttons_frame, text="Load files", command=lambda: select_fcs_files(treeview, window), style="custom.TButton")
     load_files_button.pack(side=TOP, pady=50)
 
     # Botón borrar
-    delete_button: Button = Button(buttons_frame, text="Delete", command=lambda: delete_row(treeview, canvas_frame, canvas_button_frame))
+    delete_button: Button = Button(buttons_frame, text="Delete", command=lambda: delete_row(treeview, canvas_frame, canvas_button_frame), style="custom.TButton")
     delete_button.pack(side=TOP, pady=50)
 
     # Botón exportar
-    export_button: Button = Button(buttons_frame, text="Export", command=lambda: export(window, treeview))
+    export_button: Button = Button(buttons_frame, text="Export", command=lambda: export(window, treeview), style="custom.TButton")
     export_button.pack(side=TOP, pady=50)
 
     # Y también ponemos otro componente de relleno en la parte inferior para poder centrar los botones verticalmente
@@ -342,11 +286,11 @@ def select_fcs_files(treeview: Treeview, window: Window) -> None:
 
         floodgauge_toplevel_size_placement(window, floodgauge_toplevel)
 
-        style = Style()
-        style.configure("Horizontal.TFloodgauge", background=_GREEN, troughcolor =_LIGHTGREEN, bordercolor=_GREEN)
+        custom_horizontal_t_floodgauge_style: Style = Style()
+        custom_horizontal_t_floodgauge_style.configure("custom.Horizontal.TFloodgauge", background=_GREEN, troughcolor =_LIGHTGREEN, bordercolor=_GREEN)
 
         percentage: str = "0"
-        floodgauge: Floodgauge = Floodgauge(floodgauge_toplevel, length=100, mode=DETERMINATE, style="Horizontal.TFloodgauge", mask=update_floodgauge_mask(percentage), font=("Helvetica", 19, "bold"))
+        floodgauge: Floodgauge = Floodgauge(floodgauge_toplevel, length=100, mode=DETERMINATE, style="custom.Horizontal.TFloodgauge", mask=update_floodgauge_mask(percentage), font=("Helvetica", 19, "bold"))
         floodgauge.pack(fill=BOTH, expand=True)
 
         # Comenzamos a procesar los ficheros
@@ -542,13 +486,16 @@ def export(window: Window, treeview: Treeview) -> None:
 
         string_var: StringVar = StringVar()
 
-        csv_radiobutton = Radiobutton(options_frame, text=_EXPORT_CSV_VALUE, variable=string_var, value=_EXPORT_CSV_VALUE)
+        custom_t_radiobutton_style: Style = Style()
+        custom_t_radiobutton_style.configure("custom.TRadiobutton", font=("Helvetica", 12))
+
+        csv_radiobutton = Radiobutton(options_frame, text=_EXPORT_CSV_VALUE, variable=string_var, value=_EXPORT_CSV_VALUE, style="custom.TRadiobutton")
         csv_radiobutton.pack(side=TOP, pady=(50, 0))
 
-        xlsx_radiobutton = Radiobutton(options_frame, text=_EXPORT_XLSX_VALUE, variable=string_var, value=_EXPORT_XLSX_VALUE)
+        xlsx_radiobutton = Radiobutton(options_frame, text=_EXPORT_XLSX_VALUE, variable=string_var, value=_EXPORT_XLSX_VALUE, style="custom.TRadiobutton")
         xlsx_radiobutton.pack(side=TOP)
 
-        pdf_wkhtmltopdf_radiobutton = Radiobutton(options_frame, text=_EXPORT_PDF_VALUE, variable=string_var, value=_EXPORT_PDF_VALUE)
+        pdf_wkhtmltopdf_radiobutton = Radiobutton(options_frame, text=_EXPORT_PDF_VALUE, variable=string_var, value=_EXPORT_PDF_VALUE, style="custom.TRadiobutton")
         pdf_wkhtmltopdf_radiobutton.pack(side=TOP, pady=(0, 50))
 
         accept_button = Button(accept_button_frame, text="Accept", command=lambda: on_accept(string_var, treeview, export_toplevel, window))
@@ -882,5 +829,53 @@ def show_graph_window(canvas_frame: Frame, column_value: str, clic_view_graph_wi
 
 # Si el nombre del módulo es igual a __main__ se ejecutará el código (esto se hace por si queremos utilizar este código como un módulo, y no queremos que ejecute el código del main)
 if __name__ == "__main__":
-    # Ejecutamos la función principal del programa
-    _main()
+    # Generamos el directorio del programa en el directorio de usuario
+    generate_program_directory()
+
+    # Generamos la ventana del programa
+    window: Window = generate_window()
+    
+    # Dimensionamos y posicionamos la ventana en la pantalla
+    window_size_placement(window)
+
+    #FIXME
+    # # Generamos la pantalla de bienvenida
+    # splash_screen_toplevel: Toplevel = generate_splash_screen_toplevel()
+    
+    # # Dimensionamos y posicionamos el nivel superior de la pantalla de bienvenida
+    # splash_screen_toplevel_size_placement(window, splash_screen_toplevel)
+
+    # # Cargar una imagen para la pantalla de bienvenida
+    # SPLASH_SCREEN_IMAGE_NAME: str = "tkinter_ttkbootstrap_splash_screen.png"
+    # SPLASH_SCREEN_IMAGE_PATH: str = path.join(_BASE_ROUTE, SPLASH_SCREEN_IMAGE_NAME) # Esto obtiene la imagen de la pantalla de bienvenida
+    # splash_screen_photo_image: PhotoImage = PhotoImage(file=SPLASH_SCREEN_IMAGE_PATH)
+    # label = Label(splash_screen_toplevel, image=splash_screen_photo_image)
+    # label.pack()
+    # splash_screen_toplevel.update()
+
+    # MILLISECONDS: int = 5000
+    # window.after(MILLISECONDS, window.deiconify)  # Muestra la ventana principal después de 100ms
+    # window.after(MILLISECONDS, splash_screen_toplevel.destroy)  # Destruye la pantalla de inicio después de 100ms
+    #FIXME
+
+    # El estado de la ventana será maximizado
+    # window.state("zoomed")
+
+    # Generamos los marcos de la ventana del programa
+    buttons_frame: Frame = generate_buttons_frame(window) # Generamos el marco de los botones
+    treeview_frame: Frame = generate_treeview_frame(window) # Generamos el marco de la tabla de datos
+    below_frame: Frame = generate_below_frame(window) # Generamos el marco del botón del canvas
+    canvas_frame: Frame = generate_canvas_frame(below_frame) # Generamos el marco del canvas
+    canvas_button_frame: Frame = generate_canvas_button_frame(below_frame) # Generamos el marco del botón del canvas
+
+    # Generamos la tabla de datos
+    treeview: Treeview = generate_treeview(treeview_frame)
+
+    # Generamos los botones
+    generate_buttons(window, buttons_frame, canvas_frame, canvas_button_frame, treeview)
+
+    # Mostramos el canvas cada vez que seleccionamos una fila del treeview una vez que se ha cargado todo
+    treeview.bind("<<TreeviewSelect>>", lambda event: show_canvas_selected_row_treeview(canvas_frame, canvas_button_frame, treeview))
+
+    # Generamos el hilo que genera la ventana del programa
+    window.mainloop()
