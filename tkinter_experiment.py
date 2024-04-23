@@ -22,17 +22,18 @@ from matplotlib.pyplot import subplots, show, close
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Constantes
-_PROGRAM_DIRECTORY_NAME: str = "Tkinter experiment"
 _USER_DIRECTORY_PATH: str = path.expanduser("~") # Esto obtiene el directorio de usuario
+_PROGRAM_DIRECTORY_NAME: str = "Tkinter experiment"
 _PROGRAM_DIRECTORY_PATH: str = path.join(_USER_DIRECTORY_PATH, _PROGRAM_DIRECTORY_NAME) # Esto obtiene el directorio del programa
 _THEME_NAME: str = "cyborg"
-_APPLICATION_TITLE: str = "Tkinter experiment"
+_APPLICATION_TITLE: str = _PROGRAM_DIRECTORY_NAME
 _BASE_ROUTE: str = getattr(sys, "_MEIPASS", path.abspath(path.dirname(__file__)))
-_ICON_IMAGE_NAME: str = "tkinter_experiment_icon.png"
+_ICON_IMAGE_NAME: str = "images\\tkinter_experiment_icon.png"
 _ICON_IMAGE_PATH: str = path.join(_BASE_ROUTE, _ICON_IMAGE_NAME) # Esto obtiene la imagen de la pantalla de bienvenida
 _MINIMUM_WINDOW_WIDTH: int = 800
 _MINIMUM_WINDOW_HEIGHT: int = 600
-# _BLACK = "black"#FIXME
+_FROZEN: str = "frozen"#FIXME
+# _BLACK: str = "black"#FIXME
 _TREEVIEW_COLUMNS: tuple = ("file_name", "total_number_events", "number_cluster_events", "percentage_number_events_total", "mfi_cluster") # Definimos las columnas del treeview
 _GREEN: str = "green"
 _LIGHTGREEN: str = "lightgreen"
@@ -48,7 +49,7 @@ _YCHANNEL: str = "B8-A"
 _SCALE: str = "log"
 _CHANNEL: str = "B4-A"
 _CLUSTER_NAME: str = "FlowPeaks"
-_0DISABLED = "-disabled"
+_0DISABLED: str = "-disabled"
 _MINIMUM_FLOODGAUGE_TOPLEVEL_WIDTH: int = 250
 _MINIMUM_FLOODGAUGE_TOPLEVEL_HEIGHT: int = 75
 _EXPORT_TOPLEVEL_TITLE: str = "Export to"
@@ -65,13 +66,13 @@ _PDF_EXTENSION: str = ".pdf"
 _EXPORT_PDF_VALUE: str = f"{_EXPORT_TOPLEVEL_TITLE} {_PDF_EXTENSION}"
 _R: str = "r"
 _TREEVIEW_FILE_NAME: str = "Treeview"
-_TIMESTAMP: str = datetime.now().strftime("_%Y.%m.%d_%H.%M.%S")
 _THIN: str = "thin"
 _A: str = "A"
 _B: str = "B"
 _C: str = "C"
 _D: str = "D"
 _E: str = "E"
+
 # Variables
 _experiment_dictionary: dict = {}
 
@@ -88,36 +89,35 @@ def generate_program_directory() -> None:
             showerror(title="Error", message=f"Error creating program directory:\n{exception}")
 
 # Función que genera la ventana del programa
-def generate_window() -> Window:
+def generate_main_window() -> Window:
     """
     Función que genera la ventana del programa
     """
-    # Generamos la ventana con un tema específico, un título, unas dimensiones mínimas y un ícono
-    window: Window = Window(themename=_THEME_NAME)
-    # window.withdraw()#FIXME
-    window.title(_APPLICATION_TITLE)
-    window.minsize(_MINIMUM_WINDOW_WIDTH, _MINIMUM_WINDOW_HEIGHT)
+    # Generamos la ventana con un tema específico, un título y unas dimensiones mínimas
+    main_window: Window = Window(themename=_THEME_NAME)
+    main_window.title(_APPLICATION_TITLE)
+    main_window.minsize(_MINIMUM_WINDOW_WIDTH, _MINIMUM_WINDOW_HEIGHT)
     icon_photo_image: PhotoImage = PhotoImage(file=_ICON_IMAGE_PATH)
-    window.iconphoto(False, icon_photo_image)
+    main_window.iconphoto(False, icon_photo_image)
 
     # Retornamos la ventana del programa
-    return window
+    return main_window
 
 # Función que dimensiona y posiciona la ventana en la pantalla
-def window_size_placement(window: Window) -> None:
+def main_window_size_placement(main_window: Window) -> None:
     """
     Función que dimensiona y posiciona la ventana en la pantalla
     """
     # Obtiene las dimensiones de la pantalla
-    screen_width: int = window.winfo_screenwidth()
-    screen_height: int = window.winfo_screenheight()
+    screen_width: int = main_window.winfo_screenwidth()
+    screen_height: int = main_window.winfo_screenheight()
 
     # Calcula la posición del centro
     position_top: int = int(screen_height / 2 - _MINIMUM_WINDOW_HEIGHT / 2)
     position_right: int = int(screen_width / 2 - _MINIMUM_WINDOW_WIDTH / 2)
 
     # Posiciona la ventana en el centro de la pantalla
-    window.geometry(f"{_MINIMUM_WINDOW_WIDTH}x{_MINIMUM_WINDOW_HEIGHT}+{position_right}+{position_top}")
+    main_window.geometry(f"{_MINIMUM_WINDOW_WIDTH}x{_MINIMUM_WINDOW_HEIGHT}+{position_right}+{position_top}")
 
 # FIXMEFunción que genera la pantalla de inicio
 # def generate_splash_screen_toplevel() -> Toplevel:
@@ -149,34 +149,34 @@ def window_size_placement(window: Window) -> None:
 #     splash_screen_toplevel.geometry(f"{SPLASH_SCREEN_TOPLEVEL_WIDTH}x{SPLASH_SCREEN_TOPLEVEL_HEIGHT}+{x}+{y}")
 
 # Función que genera el marco de los botones
-def generate_buttons_frame(window: Window) -> Frame:
+def generate_buttons_frame(main_window: Window) -> Frame:
     """
     Función que genera el marco de los botones
     """
     # Creamos un frame en el que generaremos los botones
-    buttons_frame: Frame = Frame(window)
+    buttons_frame: Frame = Frame(main_window)
     buttons_frame.place(relx=0, rely=0, relwidth=0.2, relheight=1)
 
     return buttons_frame
 
 # Función que genera el marco de la tabla de datos
-def generate_treeview_frame(window: Window) -> Frame:
+def generate_treeview_frame(main_window: Window) -> Frame:
     """
     Función que genera el marco de la tabla de datos
     """
     # Creamos un frame en el que generaremos el treeview
-    treeview_frame: Frame = Frame(window)
+    treeview_frame: Frame = Frame(main_window)
     treeview_frame.place(relx=0.2, rely=0, relwidth=0.8, relheight=0.5)
 
     return treeview_frame
 
 # Función que genera el marco de abajo
-def generate_below_frame(window: Window) -> Frame:
+def generate_below_frame(main_window: Window) -> Frame:
     """
     Función que genera el marco de abajo
     """
-    # Creamos un frame en el que generaremos el canvas y del botón de mostrar el canvas
-    below_frame: Frame = Frame(window)
+    # Creamos un frame en el que generaremos el marco del canvas y el marco del botón de mostrar el canvas
+    below_frame: Frame = Frame(main_window)
     below_frame.place(relx=0.2, rely=0.5, relwidth=0.8, relheight=0.5)
 
     return below_frame
@@ -237,12 +237,12 @@ def add_treeview_scrollbars(treeview_frame: Frame, treeview: Treeview) -> None:
     custom_vertical_t_scrollbar_style: Style = Style()
     custom_vertical_t_scrollbar_style.configure("custom.Vertical.TScrollbar", background=_GREEN, troughcolor=_LIGHTGREEN, arrowcolor=_WHITE)
 
-    vertical_scrollbar: Scrollbar = Scrollbar(treeview_frame, orient=VERTICAL, command=treeview.yview, style="custom.Vertical.TScrollbar")
+    vertical_scrollbar: Scrollbar = Scrollbar(treeview_frame, orient=VERTICAL, command=treeview.yview)
     treeview.configure(yscrollcommand=vertical_scrollbar.set)
     vertical_scrollbar.pack(side=RIGHT, fill=Y)
 
 # Función que genera los botones
-def generate_buttons(window, buttons_frame: Frame, canvas_frame: Frame, canvas_button_frame: Frame, treeview: Treeview) -> None:
+def generate_buttons(main_window, buttons_frame: Frame, canvas_frame: Frame, canvas_button_frame: Frame, treeview: Treeview) -> None:
     """
     Función que genera los botones
     """
@@ -252,11 +252,11 @@ def generate_buttons(window, buttons_frame: Frame, canvas_frame: Frame, canvas_b
     
     # Creamos los botones
     # Creamos un estilo
-    custom_t_button_style: Style = Style()
-    custom_t_button_style.configure("custom.TButton", background=_GREEN, foreground=_LIGHTGREEN, font=("Helvetica", 12, "bold"))
+    custom_t_style: Style = Style()
+    custom_t_style.configure("custom.TButton", background=_GREEN, foreground=_LIGHTGREEN, font=("Helvetica", 12, "bold"))
 
     # Botón cargar archivos
-    load_files_button: Button = Button(buttons_frame, text="Load files", command=lambda: select_fcs_files(treeview, window), style="custom.TButton")
+    load_files_button: Button = Button(buttons_frame, text="Load files", command=lambda: select_fcs_files(treeview, main_window), style="custom.TButton")
     load_files_button.pack(side=TOP, pady=50)
 
     # Botón borrar
@@ -264,7 +264,7 @@ def generate_buttons(window, buttons_frame: Frame, canvas_frame: Frame, canvas_b
     delete_button.pack(side=TOP, pady=50)
 
     # Botón exportar
-    export_button: Button = Button(buttons_frame, text="Export", command=lambda: export(window, treeview), style="custom.TButton")
+    export_button: Button = Button(buttons_frame, text="Export", command=lambda: export(main_window, treeview), style="custom.TButton")
     export_button.pack(side=TOP, pady=50)
 
     # Y también ponemos otro componente de relleno en la parte inferior para poder centrar los botones verticalmente
@@ -272,7 +272,7 @@ def generate_buttons(window, buttons_frame: Frame, canvas_frame: Frame, canvas_b
     label2.pack(side=TOP, expand=True)
 
 # Función que selecciona archivos .fcs
-def select_fcs_files(treeview: Treeview, window: Window) -> None:
+def select_fcs_files(treeview: Treeview, main_window: Window) -> None:
     """
     Función que selecciona archivos .fcs
     """
@@ -282,11 +282,11 @@ def select_fcs_files(treeview: Treeview, window: Window) -> None:
             treeview = delete_existing_elements_treeview(treeview) # Vaciamos el treeview
             _experiment_dictionary.clear() # Y también vaciamos el diccionario de experimentos
         
-        floodgauge_toplevel: Toplevel = generate_floodgauge_toplevel(window)
+        floodgauge_toplevel: Toplevel = generate_floodgauge_toplevel(main_window)
 
-        floodgauge_toplevel_size_placement(window, floodgauge_toplevel)
+        floodgauge_toplevel_size_placement(main_window, floodgauge_toplevel)
 
-        custom_horizontal_t_floodgauge_style: Style = Style()
+        custom_horizontal_t_floodgauge_style = Style()
         custom_horizontal_t_floodgauge_style.configure("custom.Horizontal.TFloodgauge", background=_GREEN, troughcolor =_LIGHTGREEN, bordercolor=_GREEN)
 
         percentage: str = "0"
@@ -294,7 +294,7 @@ def select_fcs_files(treeview: Treeview, window: Window) -> None:
         floodgauge.pack(fill=BOTH, expand=True)
 
         # Comenzamos a procesar los ficheros
-        process_files(floodgauge, file_paths, treeview, window, floodgauge_toplevel)
+        process_files(floodgauge, file_paths, treeview, main_window, floodgauge_toplevel)
 
 # Función que borra todos los elementos existentes en el treeview
 def delete_existing_elements_treeview(treeview: Treeview) -> Treeview:
@@ -307,13 +307,13 @@ def delete_existing_elements_treeview(treeview: Treeview) -> Treeview:
     return treeview
 
 # Función que genera el nivel superior
-def generate_floodgauge_toplevel(window: Window) -> Toplevel:
+def generate_floodgauge_toplevel(main_window: Window) -> Toplevel:
     """
     Función que genera el nivel superior
     """
     # Generamos el nivel superior con un título y unas dimensiones mínimas
-    floodgauge_toplevel: Toplevel = Toplevel(window)
-    window.attributes(_0DISABLED, True) # Deshabilitamos la ventana principal
+    floodgauge_toplevel: Toplevel = Toplevel(main_window)
+    main_window.attributes(_0DISABLED, True) # Deshabilitamos la ventana principal
     floodgauge_toplevel.overrideredirect(1) # Eliminamos la barra de título
     floodgauge_toplevel.grab_set() # Hacemos que la ventana sea modal
 
@@ -321,23 +321,23 @@ def generate_floodgauge_toplevel(window: Window) -> Toplevel:
     return floodgauge_toplevel
 
 # Función que dimensiona y posiciona el nivel superior en la pantalla
-def floodgauge_toplevel_size_placement(window: Window, floodgauge_toplevel: Toplevel) -> None:
+def floodgauge_toplevel_size_placement(main_window: Window, floodgauge_toplevel: Toplevel) -> None:
     """
     Función que dimensiona y posiciona el nivel superior en la pantalla
     """
     # Obtenemos las dimensiones de la ventana principal
-    window_width: int = window.winfo_width()
-    window_height: int = window.winfo_height()
+    main_window_width: int = main_window.winfo_width()
+    main_window_height: int = main_window.winfo_height()
 
     # Obtenemos la posición de la ventana principal
-    position_x: int = window.winfo_x()
-    position_y: int = window.winfo_y()
+    position_x: int = main_window.winfo_x()
+    position_y: int = main_window.winfo_y()
 
     # Establecemos las dimensiones del toplevel
     floodgauge_toplevel.geometry(f"{_MINIMUM_FLOODGAUGE_TOPLEVEL_WIDTH}x{_MINIMUM_FLOODGAUGE_TOPLEVEL_HEIGHT}")
 
     # Calculamos la posición de la ventana secundaria
-    floodgauge_toplevel.geometry("+%d+%d" % (position_x + (window_width - _MINIMUM_FLOODGAUGE_TOPLEVEL_WIDTH) / 2, position_y + (window_height - _MINIMUM_FLOODGAUGE_TOPLEVEL_HEIGHT) / 2))
+    floodgauge_toplevel.geometry("+%d+%d" % (position_x + (main_window_width - _MINIMUM_FLOODGAUGE_TOPLEVEL_WIDTH) / 2, position_y + (main_window_height - _MINIMUM_FLOODGAUGE_TOPLEVEL_HEIGHT) / 2))
 
 # Función que actualiza la máscara de floodgauge
 def update_floodgauge_mask(percentage: str) -> str:
@@ -347,7 +347,7 @@ def update_floodgauge_mask(percentage: str) -> str:
     return f"Processing\n{percentage}%"
 
 # Función que procesa los archivos
-def process_files(floodgauge: Floodgauge, file_paths: str, treeview: Treeview, window: Window, floodgauge_toplevel: Toplevel) -> None:
+def process_files(floodgauge: Floodgauge, file_paths: str, treeview: Treeview, main_window: Window, floodgauge_toplevel: Toplevel) -> None:
     """
     Función que procesa los archivos
     """
@@ -364,7 +364,7 @@ def process_files(floodgauge: Floodgauge, file_paths: str, treeview: Treeview, w
         
         floodgauge.update()
     
-    window.attributes(_0DISABLED, False) # Habilitamos la ventana principal de nuevo
+    main_window.attributes(_0DISABLED, False) # Habilitamos la ventana principal de nuevo
     
     floodgauge_toplevel.destroy()
 
@@ -472,14 +472,14 @@ def delete_row(treeview: Treeview, canvas_frame: Frame, canvas_button_frame: Fra
         showwarning(title="Warning", message="No row selected") # Mostramos un cuadro de diálogo de advertencia
 
 # Función que exporta el treeview a un fichero .csv
-def export(window: Window, treeview: Treeview) -> None:
+def export(main_window: Window, treeview: Treeview) -> None:
     """
     Función que exporta el treeview a un fichero .csv
     """
     if treeview.get_children(): # Si el treeview contiene alguna línea, se exportarán los datos del treeview, sino, aparecerá una advertencia diciendo que no hay datos que exportar del treeview
-        export_toplevel: Toplevel = generate_export_toplevel(window)
+        export_toplevel: Toplevel = generate_export_toplevel(main_window)
 
-        export_toplevel_size_placement(window, export_toplevel)
+        export_toplevel_size_placement(main_window, export_toplevel)
 
         options_frame: Frame = generate_export_options_frame(export_toplevel)
         accept_button_frame: Frame = generate_export_accept_button_frame(export_toplevel)
@@ -498,21 +498,21 @@ def export(window: Window, treeview: Treeview) -> None:
         pdf_wkhtmltopdf_radiobutton = Radiobutton(options_frame, text=_EXPORT_PDF_VALUE, variable=string_var, value=_EXPORT_PDF_VALUE, style="custom.TRadiobutton")
         pdf_wkhtmltopdf_radiobutton.pack(side=TOP, pady=(0, 50))
 
-        accept_button = Button(accept_button_frame, text="Accept", command=lambda: on_accept(string_var, treeview, export_toplevel, window))
+        accept_button = Button(accept_button_frame, text="Accept", command=lambda: on_accept(string_var, treeview, export_toplevel, main_window))
         accept_button.pack()
     else:
         showwarning(title="Warning", message="There is no data in the treeview to export") # Mostramos un cuadro de diálogo de advertencia
 
 # Función que genera el nivel superior
-def generate_export_toplevel(window: Window) -> Toplevel:
+def generate_export_toplevel(main_window: Window) -> Toplevel:
     """
     Función que genera el nivel superior
     """
     # Generamos el nivel superior con un título y unas dimensiones mínimas
-    export_toplevel: Toplevel = Toplevel(window)
+    export_toplevel: Toplevel = Toplevel(main_window)
     export_toplevel.title(_EXPORT_TOPLEVEL_TITLE)
-    window.attributes(_0DISABLED, True) # Deshabilitamos la ventana principal
-    export_toplevel.protocol("WM_DELETE_WINDOW", lambda: on_closing_export_toplevel(window, export_toplevel)) # Al cerrar el nivel superior, habilitamos la ventana principal de nuevo
+    main_window.attributes(_0DISABLED, True) # Deshabilitamos la ventana principal
+    export_toplevel.protocol("WM_DELETE_WINDOW", lambda: on_closing_export_toplevel(main_window, export_toplevel)) # Al cerrar el nivel superior, habilitamos la ventana principal de nuevo
     export_toplevel.resizable(False, False)
     export_toplevel.minsize(_MINIMUM_EXPORT_TOPLEVEL_WIDTH, _MINIMUM_EXPORT_TOPLEVEL_HEIGHT)
     export_toplevel.grab_set() # Hacemos que la ventana sea modal
@@ -521,32 +521,32 @@ def generate_export_toplevel(window: Window) -> Toplevel:
     return export_toplevel
 
 # Función que se va a ejecutar cuando cerremos el nivel superior de exportar
-def on_closing_export_toplevel(window: Window, export_toplevel: Toplevel) -> None:
+def on_closing_export_toplevel(main_window: Window, export_toplevel: Toplevel) -> None:
     """
     Función que se va a ejecutar cuando cerremos el nivel superior de exportar
     """
-    window.attributes(_0DISABLED, False) # Habilitamos la ventana principal de nuevo
+    main_window.attributes(_0DISABLED, False) # Habilitamos la ventana principal de nuevo
     
     export_toplevel.destroy()
 
 # Función que dimensiona y posiciona el nivel superior en la pantalla
-def export_toplevel_size_placement(window: Window, export_toplevel: Toplevel) -> None:
+def export_toplevel_size_placement(main_window: Window, export_toplevel: Toplevel) -> None:
     """
     Función que dimensiona y posiciona el nivel superior en la pantalla
     """
     # Obtenemos las dimensiones de la ventana principal
-    window_width: int = window.winfo_width()
-    window_height: int = window.winfo_height()
+    main_window_width: int = main_window.winfo_width()
+    main_window_height: int = main_window.winfo_height()
 
     # Obtenemos la posición de la ventana principal
-    position_x: int = window.winfo_x()
-    position_y: int = window.winfo_y()
+    position_x: int = main_window.winfo_x()
+    position_y: int = main_window.winfo_y()
 
     # Establecemos las dimensiones del toplevel
     export_toplevel.geometry(f"{_MINIMUM_EXPORT_TOPLEVEL_WIDTH}x{_MINIMUM_EXPORT_TOPLEVEL_HEIGHT}")
 
     # Calculamos la posición de la ventana secundaria
-    export_toplevel.geometry("+%d+%d" % (position_x + (window_width - _MINIMUM_EXPORT_TOPLEVEL_WIDTH) / 2, position_y + (window_height - _MINIMUM_EXPORT_TOPLEVEL_HEIGHT) / 2))
+    export_toplevel.geometry("+%d+%d" % (position_x + (main_window_width - _MINIMUM_EXPORT_TOPLEVEL_WIDTH) / 2, position_y + (main_window_height - _MINIMUM_EXPORT_TOPLEVEL_HEIGHT) / 2))
 
 # Función que genera el marco de las opciones
 def generate_export_options_frame(export_toplevel: Toplevel) -> Frame:
@@ -571,30 +571,31 @@ def generate_export_accept_button_frame(export_toplevel: Toplevel) -> Frame:
     return accept_button_frame
 
 # Función que ejecuta la correspondiente al aceptar según la opción seleccionada
-def on_accept(string_var: StringVar, treeview: Treeview, export_toplevel: Toplevel, window: Window) -> None:
+def on_accept(string_var: StringVar, treeview: Treeview, export_toplevel: Toplevel, main_window: Window) -> None:
     """
     Función que ejecuta la correspondiente al aceptar según la opción seleccionada
     """
     option: str = string_var.get()
 
     if option == _EXPORT_CSV_VALUE:
-        export_to_csv(treeview, window, export_toplevel)
+        export_to_csv(treeview, main_window, export_toplevel)
     elif option == _EXPORT_XLSX_VALUE:
-        export_to_xslx(treeview, window, export_toplevel)
+        export_to_xslx(treeview, main_window, export_toplevel)
     elif option == _EXPORT_PDF_VALUE:
-        export_to_pdf(treeview, window, export_toplevel)
+        export_to_pdf(treeview, main_window, export_toplevel)
     else:
         export_toplevel.destroy()
         showwarning(title="Warning", message="No export method selected") # Mostramos un cuadro de diálogo de advertencia
-        export(window, treeview)
+        export(main_window, treeview)
 
 # Función que exporta el treeview a un fichero .csv
-def export_to_csv(treeview: Treeview, window: Window, export_toplevel: Toplevel) -> None:
+def export_to_csv(treeview: Treeview, main_window: Window, export_toplevel: Toplevel) -> None:
     """
     Función que exporta el treeview a un fichero .csv
     """
     try:
-        CSV_FILE_NAME: str = f"{_TREEVIEW_FILE_NAME}{_TIMESTAMP}{_CSV_EXTENSION}"
+        _timestamp: str = datetime.now().strftime("_%Y.%m.%d_%H.%M.%S")
+        CSV_FILE_NAME: str = f"{_TREEVIEW_FILE_NAME}{_timestamp}{_CSV_EXTENSION}"
         generate_reports_directory()
         CSV_FILE_PATH: str = path.join(_REPORTS_DIRECTORY_PATH, CSV_FILE_NAME) # Esto une el directorio de reportes y "Treeview.csv" para formar una ruta completa donde se encuentra el archivo .csv
         with open(CSV_FILE_PATH, _W, newline="") as file:
@@ -603,11 +604,18 @@ def export_to_csv(treeview: Treeview, window: Window, export_toplevel: Toplevel)
             for row_id in treeview.get_children():
                 row: list = treeview.item(row_id)[_VALUES]
                 file_writer.writerow(row)
+        change_main_window_attributes_and_destroy_toplevel(main_window, export_toplevel)
         showinfo(title="Info", message=f"The treeview was exported to a {_CSV_EXTENSION} file in the reports directory")
     except Exception as exception:
+        change_main_window_attributes_and_destroy_toplevel(main_window, export_toplevel)
         showerror(title="Error", message=f"Error when exporting the CSV:\n{str(exception)}")
-    
-    window.attributes(_0DISABLED, False) # Habilitamos la ventana principal de nuevo
+
+# Función que cambia los atributos de ventana y destruye el nivel superior
+def change_main_window_attributes_and_destroy_toplevel(main_window: Window, export_toplevel: Toplevel) -> None:
+    """
+    Función que cambia los atributos de ventana y destruye el nivel superior
+    """
+    main_window.attributes(_0DISABLED, False) # Habilitamos la ventana principal de nuevo
     
     export_toplevel.destroy()
 
@@ -624,7 +632,7 @@ def generate_reports_directory() -> None:
             showerror(title="Error", message=f"Error creating reports directory:\n{exception}")
 
 # Función que exporta el treeview a un fichero .xlsx
-def export_to_xslx(treeview: Treeview, window: Window, export_toplevel: Toplevel) -> None:
+def export_to_xslx(treeview: Treeview, main_window: Window, export_toplevel: Toplevel) -> None:
     """
     Función que exporta el treeview a un fichero .xlsx
     """
@@ -669,42 +677,41 @@ def export_to_xslx(treeview: Treeview, window: Window, export_toplevel: Toplevel
                 cell.border = border
         
         # Guardamos el libro de trabajo
-        XLSX_FILE_NAME: str = f"{_TREEVIEW_FILE_NAME}{_TIMESTAMP}{_XLSX_EXTENSION}"
+        _timestamp: str = datetime.now().strftime("_%Y.%m.%d_%H.%M.%S")
+        XLSX_FILE_NAME: str = f"{_TREEVIEW_FILE_NAME}{_timestamp}{_XLSX_EXTENSION}"
         generate_reports_directory()
         XLSX_FILE_PATH: str = path.join(_REPORTS_DIRECTORY_PATH, XLSX_FILE_NAME) # Esto une el directorio de reportes y "Treeview.xlsx" para formar una ruta completa donde se encuentra el archivo .xlsx
         workbook.save(XLSX_FILE_PATH)
-        showinfo(title="Info", message=f"The treeview was exported to a {_XLSX_EXTENSION} file in the program directory")
+        change_main_window_attributes_and_destroy_toplevel(main_window, export_toplevel)
+        showinfo(title="Info", message=f"The treeview was exported to a {_XLSX_EXTENSION} file in the reports directory")
     except Exception as exception:
+        change_main_window_attributes_and_destroy_toplevel(main_window, export_toplevel)
         showerror(title="Error", message=f"Error when exporting the Excel:\n{str(exception)}")
-    
-    window.attributes(_0DISABLED, False) # Habilitamos la ventana principal de nuevo
-    
-    export_toplevel.destroy()
 
 # Función que exporta el treeview a un fichero .pdf
-def export_to_pdf(treeview: Treeview, window: Window, export_toplevel: Toplevel) -> None:
+def export_to_pdf(treeview: Treeview, main_window: Window, export_toplevel: Toplevel) -> None:
     """
     Función que exporta el treeview a un fichero .pdf
     """
     WKHTMLTOPDF_PROGRAM_PATH: str = path.join(_BASE_ROUTE, "wkhtmltopdf\\bin\\wkhtmltopdf.exe")
-        
+
     if path.exists(WKHTMLTOPDF_PROGRAM_PATH): # Si existe la ruta del programa "wkhtmltopdf.exe" se podrá crear el PDF, sino saltará un aviso diciendo que no se ha encontrado la ruta
         try:
             # Generamos el PDF
-            PDF_FILE_NAME: str = f"{_TREEVIEW_FILE_NAME}{_TIMESTAMP}{_PDF_EXTENSION}"
+            _timestamp: str = datetime.now().strftime("_%Y.%m.%d_%H.%M.%S")
+            PDF_FILE_NAME: str = f"{_TREEVIEW_FILE_NAME}{_timestamp}{_PDF_EXTENSION}"
             generate_reports_directory()
             PDF_FILE_PATH: str = path.join(_REPORTS_DIRECTORY_PATH, PDF_FILE_NAME) # Esto une el directorio de reportes y "Treeview.pdf" para formar una ruta completa donde se encuentra el archivo .pdf
             PDFKIT_CONFIGURATION: Configuration = configuration(wkhtmltopdf=WKHTMLTOPDF_PROGRAM_PATH) # Configuración de pdfkit
             from_string(html_content(treeview), PDF_FILE_PATH, configuration=PDFKIT_CONFIGURATION)
-            showinfo(title="Info", message=f"The treeview was exported to a {_PDF_EXTENSION} file in the program directory")
+            change_main_window_attributes_and_destroy_toplevel(main_window, export_toplevel)
+            showinfo(title="Info", message=f"The treeview was exported to a {_PDF_EXTENSION} file in the reports directory")
         except Exception as exception:
-            showerror(title="Error", message=f"Error when exporting the PDF:\n{str(exception)}")
+            change_main_window_attributes_and_destroy_toplevel(main_window, export_toplevel)
+            showerror(title="Error", message=f"Error when exporting the PDF\n{str(exception)}")
     else:
+        change_main_window_attributes_and_destroy_toplevel(main_window, export_toplevel)
         showerror(title="Error", message="The program path \"wkhtmltopdf.exe\" could not be found. Cannot create PDF") # Mostramos un cuadro de diálogo de error
-
-    window.attributes(_0DISABLED, False) # Habilitamos la ventana principal de nuevo
-        
-    export_toplevel.destroy()
 
 # Función que obtiene el contenido HTML, que será utilizado para generar el PDF
 def html_content(treeview: Treeview) -> str:
@@ -712,7 +719,7 @@ def html_content(treeview: Treeview) -> str:
     Función que obtiene el contenido HTML, que será utilizado para generar el PDF
     """
     # Leemos la plantilla HTML y la almacenamos en una variable
-    HTML_TEMPLATE_PATH: str = path.join(_BASE_ROUTE, "template.html")
+    HTML_TEMPLATE_PATH: str = path.join(_BASE_ROUTE, "templates\\template.html")
     html_content: str = ""
     if path.exists(HTML_TEMPLATE_PATH):
         with open(HTML_TEMPLATE_PATH, _R) as file:
@@ -833,20 +840,20 @@ if __name__ == "__main__":
     generate_program_directory()
 
     # Generamos la ventana del programa
-    window: Window = generate_window()
+    main_window: Window = generate_main_window()
     
     # Dimensionamos y posicionamos la ventana en la pantalla
-    window_size_placement(window)
+    main_window_size_placement(main_window)
 
     #FIXME
-    # # Generamos la pantalla de bienvenida
+    # Generamos la pantalla de bienvenida
     # splash_screen_toplevel: Toplevel = generate_splash_screen_toplevel()
     
-    # # Dimensionamos y posicionamos el nivel superior de la pantalla de bienvenida
+    # Dimensionamos y posicionamos el nivel superior de la pantalla de bienvenida
     # splash_screen_toplevel_size_placement(window, splash_screen_toplevel)
 
-    # # Cargar una imagen para la pantalla de bienvenida
-    # SPLASH_SCREEN_IMAGE_NAME: str = "tkinter_ttkbootstrap_splash_screen.png"
+    # Cargar una imagen para la pantalla de bienvenida
+    # SPLASH_SCREEN_IMAGE_NAME: str = "images\\tkinter_ttkbootstrap_splash_screen.png"
     # SPLASH_SCREEN_IMAGE_PATH: str = path.join(_BASE_ROUTE, SPLASH_SCREEN_IMAGE_NAME) # Esto obtiene la imagen de la pantalla de bienvenida
     # splash_screen_photo_image: PhotoImage = PhotoImage(file=SPLASH_SCREEN_IMAGE_PATH)
     # label = Label(splash_screen_toplevel, image=splash_screen_photo_image)
@@ -854,28 +861,33 @@ if __name__ == "__main__":
     # splash_screen_toplevel.update()
 
     # MILLISECONDS: int = 5000
-    # window.after(MILLISECONDS, window.deiconify)  # Muestra la ventana principal después de 100ms
-    # window.after(MILLISECONDS, splash_screen_toplevel.destroy)  # Destruye la pantalla de inicio después de 100ms
+    # window.after(MILLISECONDS, window.deiconify) # Muestra la ventana principal después de 100ms
+    # window.after(MILLISECONDS, splash_screen_toplevel.destroy) # Destruye la pantalla de inicio después de 100ms
     #FIXME
 
     # El estado de la ventana será maximizado
-    # window.state("zoomed")
+    # main_window.state("zoomed")
 
     # Generamos los marcos de la ventana del programa
-    buttons_frame: Frame = generate_buttons_frame(window) # Generamos el marco de los botones
-    treeview_frame: Frame = generate_treeview_frame(window) # Generamos el marco de la tabla de datos
-    below_frame: Frame = generate_below_frame(window) # Generamos el marco del botón del canvas
+    buttons_frame: Frame = generate_buttons_frame(main_window) # Generamos el marco de los botones
+    treeview_frame: Frame = generate_treeview_frame(main_window) # Generamos el marco de la tabla de datos
+    below_frame: Frame = generate_below_frame(main_window) # Generamos el marco de abajo
     canvas_frame: Frame = generate_canvas_frame(below_frame) # Generamos el marco del canvas
-    canvas_button_frame: Frame = generate_canvas_button_frame(below_frame) # Generamos el marco del botón del canvas
+    canvas_button_frame: Frame = generate_canvas_button_frame(below_frame) # Generamos el marco de mostrar el botón del canvas
 
     # Generamos la tabla de datos
     treeview: Treeview = generate_treeview(treeview_frame)
 
     # Generamos los botones
-    generate_buttons(window, buttons_frame, canvas_frame, canvas_button_frame, treeview)
+    generate_buttons(main_window, buttons_frame, canvas_frame, canvas_button_frame, treeview)
 
     # Mostramos el canvas cada vez que seleccionamos una fila del treeview una vez que se ha cargado todo
     treeview.bind("<<TreeviewSelect>>", lambda event: show_canvas_selected_row_treeview(canvas_frame, canvas_button_frame, treeview))
 
+    # FIXMECerramos el splash screen si abrimos el ejecutable generado con Auto Py To Exe
+    if getattr(sys, _FROZEN, False):
+        from pyi_splash import close
+        close()
+    
     # Generamos el hilo que genera la ventana del programa
-    window.mainloop()
+    main_window.mainloop()
