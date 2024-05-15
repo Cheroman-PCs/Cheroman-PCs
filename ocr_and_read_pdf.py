@@ -4,7 +4,7 @@ from PyPDF2 import PdfReader, PdfWriter, PageObject
 import pytesseract
 import pdf2image
 from tkinter import messagebox, filedialog
-from ttkbootstrap import Window, Label, Toplevel
+from ttkbootstrap import Window, Label, Toplevel, Style, TOP
 import shutil
 from PIL.PpmImagePlugin import PpmImageFile
 import re
@@ -25,7 +25,38 @@ _PATH: str = "PATH"
 _RB: str = "rb"
 _THEME_NAME: str = "cyborg"
 _APPLICATION_TITLE: str = "OCR and read PDF"
+_MINIMUM_WINDOW_WIDTH: int = 800
+_MINIMUM_WINDOW_HEIGHT: int = 600
 _WB: str = "wb"
+
+# Función que genera la ventana del programa
+def _generate_window() -> Window:
+    """
+    Función que genera la ventana del programa
+    """
+    # Generamos la ventana con un tema específico, un título y unas dimensiones mínimas
+    window: Window = Window(themename=_THEME_NAME)
+    window.title(_APPLICATION_TITLE)
+    window.minsize(_MINIMUM_WINDOW_WIDTH, _MINIMUM_WINDOW_HEIGHT)
+    window.configure(bg="red")
+    _window_size_placement(window) # Dimensionamos y posicionamos la ventana en la pantalla
+
+    # Actualizamos las tareas pendientes de la ventana principal
+    window.update_idletasks()
+
+    # Retornamos la ventana del programa
+    return window
+
+# Función que dimensiona y posiciona la ventana en la pantalla
+def _window_size_placement(window: Window) -> None:
+    """
+    Función que dimensiona y posiciona la ventana en la pantalla
+    """
+    # Dimensiona la ventana
+    window.geometry(f"{_MINIMUM_WINDOW_WIDTH}x{_MINIMUM_WINDOW_HEIGHT}")
+    
+    # Posiciona la ventana en el centro de la pantalla
+    window.place_window_center()
 
 # Función que genera el directorio temporal del programa en el directorio temporal de usuario
 def generate_temp_directory(program_temporary_directory_path: str) -> None:
@@ -158,8 +189,7 @@ if __name__ == "__main__":
     if _POPPLER_PROGRAM_PATH not in os.environ[_PATH]:
         os.environ[_PATH] += os.pathsep + _POPPLER_PROGRAM_PATH
     
-    window: Window = Window(themename=_THEME_NAME)
-    window.title(_APPLICATION_TITLE)
+    window: Window = _generate_window()
     PDF_FILE: str = filedialog.askopenfilename(filetypes=[("PDF files", "*.pdf")]) # Abre el cuadro de diálogo para seleccionar un archivo
     if PDF_FILE != "":
         def work():
@@ -202,15 +232,19 @@ if __name__ == "__main__":
                     else:
                         # Si alguno de los valores no es None, salimos del bucle
                         break
+            # Creamos un estilo
+            custom_t_label_style: Style = Style()
+            custom_t_label_style.configure("custom.TLabel", background="red", foreground="black", font=("Helvetica", 50, "bold"))
+            
             # Mostramos los valores obtenidos
-            hemoglobina_label: Label = Label(window, text=f"HEMOGLOBINA: {value_hemoglobina}")
-            hemoglobina_label.pack()
+            hemoglobina_label: Label = Label(window, text=f"HEMOGLOBINA: {value_hemoglobina}", style="custom.TLabel")
+            hemoglobina_label.pack(side=TOP, expand=True)
 
-            leucocitos_label: Label = Label(window, text=f"LEUCOCITOS: {value_leucocitos}")
-            leucocitos_label.pack()
+            leucocitos_label: Label = Label(window, text=f"LEUCOCITOS: {value_leucocitos}", style="custom.TLabel")
+            leucocitos_label.pack(side=TOP, expand=True)
 
-            hematies_label: Label = Label(window, text=f"HEMATÍES: {value_hematies}")
-            hematies_label.pack()
+            hematies_label: Label = Label(window, text=f"HEMATÍES: {value_hematies}", style="custom.TLabel")
+            hematies_label.pack(side=TOP, expand=True)
 
             loader.hide_loader(window, loader_toplevel)
 
