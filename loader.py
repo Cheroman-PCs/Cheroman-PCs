@@ -54,7 +54,7 @@ def _generate_loader_toplevel(parent: Union[Window, Toplevel]) -> Toplevel:
     """
     # Generamos el nivel superior con un título y unas dimensiones mínimas
     loader_toplevel: Toplevel = Toplevel(parent)
-    loader_toplevel.attributes(_0ALPHA, 0.75) # Ajusta la transparencia del toplevel a semi-transparente
+    loader_toplevel.attributes(_0ALPHA, 0.5) # Ajusta la transparencia del toplevel a semi-transparente
     parent.attributes(_0DISABLED, True) # Deshabilitamos la ventana principal
     loader_toplevel.overrideredirect(True) # Eliminamos la barra de título
     loader_toplevel.focus_force() # Forzamos el foco
