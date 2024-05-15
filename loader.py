@@ -19,7 +19,7 @@ _0ALPHA: str = "-alpha"
 _0DISABLED: str = "-disabled"
 
 # Función que genera la ventana del programa
-def generate_window() -> Window:
+def _generate_window() -> Window:
     """
     Función que genera la ventana del programa
     """
@@ -28,7 +28,7 @@ def generate_window() -> Window:
     window.title(_APPLICATION_TITLE)
     window.minsize(_MINIMUM_WINDOW_WIDTH, _MINIMUM_WINDOW_HEIGHT)
     window.configure(bg="red")
-    window_size_placement(window) # Dimensionamos y posicionamos la ventana en la pantalla
+    _window_size_placement(window) # Dimensionamos y posicionamos la ventana en la pantalla
 
     # Actualizamos las tareas pendientes de la ventana principal
     window.update_idletasks()
@@ -37,7 +37,7 @@ def generate_window() -> Window:
     return window
 
 # Función que dimensiona y posiciona la ventana en la pantalla
-def window_size_placement(window: Window) -> None:
+def _window_size_placement(window: Window) -> None:
     """
     Función que dimensiona y posiciona la ventana en la pantalla
     """
@@ -48,7 +48,7 @@ def window_size_placement(window: Window) -> None:
     window.place_window_center()
 
 # Función que genera el nivel superior
-def generate_loader_toplevel(parent: Union[Window, Toplevel]) -> Toplevel:
+def _generate_loader_toplevel(parent: Union[Window, Toplevel]) -> Toplevel:
     """
     Función que genera el nivel superior
     """
@@ -59,13 +59,13 @@ def generate_loader_toplevel(parent: Union[Window, Toplevel]) -> Toplevel:
     loader_toplevel.overrideredirect(True) # Eliminamos la barra de título
     loader_toplevel.focus_force() # Forzamos el foco
     loader_toplevel.grab_set() # Hacemos que la ventana sea modal
-    loader_toplevel_size_placement(parent, loader_toplevel) # Dimensionamos y posicionamos el nivel superior en la pantalla
+    _loader_toplevel_size_placement(parent, loader_toplevel) # Dimensionamos y posicionamos el nivel superior en la pantalla
 
     # Retornamos el nivel superior
     return loader_toplevel
 
 # Función que dimensiona y posiciona el nivel superior en la pantalla
-def loader_toplevel_size_placement(parent: Union[Window, Toplevel], loader_toplevel: Toplevel) -> None:
+def _loader_toplevel_size_placement(parent: Union[Window, Toplevel], loader_toplevel: Toplevel) -> None:
     """
     Función que dimensiona y posiciona el nivel superior en la pantalla
     """
@@ -77,13 +77,17 @@ def loader_toplevel_size_placement(parent: Union[Window, Toplevel], loader_tople
     position_x: int = parent.winfo_x()
     position_y: int = parent.winfo_y()
 
-    # Establecemos las dimensiones del toplevel y la centramos
+    # Establecemos las dimensiones del toplevel y lo centramos
+    loader_toplevel.geometry(f"{parent_width}x{parent_height}+{position_x + 8}+{position_y + 31}") # Dimensiones del toplevel y la centramosTODA LA VENTANA SIN LA BARRA DE TÍTULO NI LOS BORDES
     # loader_toplevel.geometry(f"{parent_width + 2}x{parent_height + 32}+{position_x + 7}+{position_y}") # TODA LA VENTANA
-    loader_toplevel.geometry(f"{parent_width}x{parent_height}+{position_x + 8}+{position_y + 31}") # TODA LA VENTANA SIN LA BARRA DE TÍTULO NI BORDES
 
+# Función que muestra el loader
 def show_loader(parent: Union[Window, Toplevel], loader_image_path: str) -> Toplevel:
+    """
+    Función que muestra el loader
+    """
     # Crear un Toplevel
-    loader_toplevel: Toplevel = generate_loader_toplevel(parent)
+    loader_toplevel: Toplevel = _generate_loader_toplevel(parent)
     
     # Cargar la imagen .gif
     image: Image.Image = Image.open(loader_image_path)
@@ -105,14 +109,18 @@ def show_loader(parent: Union[Window, Toplevel], loader_image_path: str) -> Topl
 
     return loader_toplevel
 
+# Función que oculta el loader
 def hide_loader(parent: Union[Window, Toplevel], loader_toplevel: Toplevel) -> None:
+    """
+    Función que oculta el loader
+    """
     parent.attributes(_0DISABLED, False) # Habilitamos la ventana principal de nuevo
     loader_toplevel.destroy() # Detener la animación y cerrar la ventana
 
 # Si el nombre del módulo es igual a __main__ se ejecutará el código (esto se hace por si queremos utilizar este código como un módulo, y no queremos que ejecute el código del main)
 if __name__ == "__main__":
     # Crear la ventana principal
-    window: Window = generate_window()
+    window: Window = _generate_window()
 
     # Función que se ejecuta al pulsar el botón
     def clic() -> None:
