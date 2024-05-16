@@ -1,0 +1,5 @@
+Añadir en fila 484 lo siguiente en la clase Image del módulo PIL.Image:
+
+format_description: str | None = None
+n_frames: int  # not present on all Image objects #FIXME
+_close_exclusive_fp_after_loading = True
